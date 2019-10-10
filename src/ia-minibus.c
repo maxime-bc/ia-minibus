@@ -32,7 +32,7 @@ int main(void){
 
     // 3 stations are created at the start of the game
     int NB_STATIONS = 3;
-    Station *all_stations = malloc(sizeof(Station));
+    Station *all_stations = malloc(NB_STATIONS *sizeof(Station));
 
     int arrayIndex = 0;
 
@@ -47,7 +47,7 @@ int main(void){
 
     // Populate stations informations and print them
 
-    //for(int i = 0; i < NB_STATIONS; i++){
+    for(int i = 0; i < NB_STATIONS; i++){
 
         int id = 0, x = 0, y = 0, capacity = 0;
 
@@ -59,7 +59,7 @@ int main(void){
         populate_station(id, x, y, capacity, all_stations);
         print_station(*all_stations);
 
-    //}
+    }
 
     printf("PASS\n");
     
