@@ -101,7 +101,7 @@ int main(void){
     // get number of players and our player number
     scanf("%d", &NB_PLAYERS);
     scanf("%d", &ID_PLAYER);
-    fprintf(stderr, "%d", NB_PLAYERS);
+    fprintf(stderr, "%d ", NB_PLAYERS);
     fprintf(stderr, "%d\n", ID_PLAYER);
 
     Station *all_stations = malloc(NB_STATIONS *sizeof(Station));
@@ -123,74 +123,131 @@ int main(void){
 
     }
 
-    for(int i = 0; i < NB_PLAYERS; i++){
+    int ROUND = 0;
+    fprintf(stderr, "ROUND %d\n", ROUND);
 
-        int id = 0, money = 0, SB_upgrades = 0, SP_upgrades = 0, CT_upgrades = 0, end = 0;
+    //while(1){
 
-        scanf("%d", &id);
-        scanf("%d", &money);
-        scanf("%d", &SB_upgrades);
-        scanf("%d", &SP_upgrades);
-        scanf("%d", &CT_upgrades);
-        scanf("%d", &end);
+        for(int i = 0; i < NB_PLAYERS; i++){
 
-        populate_player(id, money, SB_upgrades, SP_upgrades, CT_upgrades, end, all_players);
-        print_player(*all_players);
+            int id = 0, money = 0, SB_upgrades = 0, SP_upgrades = 0, CT_upgrades = 0, end = 0;
 
-    }
+            scanf("%d", &id);
+            scanf("%d", &money);
+            scanf("%d", &SB_upgrades);
+            scanf("%d", &SP_upgrades);
+            scanf("%d", &CT_upgrades);
+            scanf("%d", &end);
 
-    int is_new_station = 0;
-    scanf("%d", &is_new_station);
-    fprintf(stderr, "%d", is_new_station);
+            populate_player(id, money, SB_upgrades, SP_upgrades, CT_upgrades, end, all_players);
+            print_player(*all_players);
 
-    if(is_new_station){
+        }
 
-        //Each 25 rounds, a new station is added
+        int is_new_station = 0;
+        scanf("%d", &is_new_station);
+        fprintf(stderr, "%d", is_new_station);
 
-        Station new_station;
+        if(is_new_station){
 
-        int id = 0, x = 0, y = 0, capacity = 0;
+            //Each 25 rounds, a new station is added
 
-        scanf("%d", &id);
-        scanf("%d", &x);
-        scanf("%d", &y);
-        scanf("%d", &capacity);
+            Station new_station;
 
-        populate_station(id, x, y, capacity, &new_station);
-        print_station(new_station);
+            int id = 0, x = 0, y = 0, capacity = 0;
 
-    }
+            scanf("%d", &id);
+            scanf("%d", &x);
+            scanf("%d", &y);
+            scanf("%d", &capacity);
 
-    int NB_BUS = 0;
-    scanf("%d", &NB_BUS);
-    fprintf(stderr, "%d", NB_BUS);
+            populate_station(id, x, y, capacity, &new_station);
+            print_station(new_station);
 
-    Bus *all_bus = malloc(NB_BUS *sizeof(Bus));
+        }
 
-    for(int i = 0; i < NB_BUS; i++){
+        int NB_BUS = 0;
+        scanf("%d", &NB_BUS);
+        fprintf(stderr, "%d\n", NB_BUS);
 
-        int id = 0, owner_player_id = 0, x = 0, y = 0, station_id = 0, num_cars = 0;
+        Bus *all_bus = malloc(NB_BUS *sizeof(Bus));
 
-        scanf("%d", &id);
-        scanf("%d", &owner_player_id);
-        scanf("%d", &x);
-        scanf("%d", &y);
-        scanf("%d", &station_id);
-        scanf("%d", &num_cars);
+        for(int i = 0; i < NB_BUS; i++){
 
-        populate_bus(id, owner_player_id, x, y, station_id, num_cars, all_bus);
-        print_bus(*all_bus);
+            int id = 0, owner_player_id = 0, x = 0, y = 0, station_id = 0, num_cars = 0;
 
-    }
+            scanf("%d", &id);
+            scanf("%d", &owner_player_id);
+            scanf("%d", &x);
+            scanf("%d", &y);
+            scanf("%d", &station_id);
+            scanf("%d", &num_cars);
 
-    //Station new_station;
+            populate_bus(id, owner_player_id, x, y, station_id, num_cars, all_bus);
+            print_bus(*all_bus);
 
+        }
 
-    // TODO before print : read all outputs with scanf
-    // printf("BUS 0");
-    
-    while(1){
+        int NEW_TRAVELERS = 0, TRAVELERS_IN_BUS = 0, TRAVELERS_REACHING_DEST = 0;
+        scanf("%d", &NEW_TRAVELERS);
+        scanf("%d", &TRAVELERS_IN_BUS);
+        scanf("%d", &TRAVELERS_REACHING_DEST);
+        fprintf(stderr, "%d ", NEW_TRAVELERS);
+        fprintf(stderr, "%d ", TRAVELERS_IN_BUS);
+        fprintf(stderr, "%d\n", TRAVELERS_REACHING_DEST);
 
-    }
+        int all_new_travellers[NEW_TRAVELERS][3];
+
+        for(int i = 0; i < NEW_TRAVELERS; i ++){
+
+            int IDT = 0, IDS1 = 0, IDS2 = 0;
+
+            scanf("%d", &IDT);
+            scanf("%d", &IDS1);
+            scanf("%d", &IDS2);
+            fprintf(stderr, "%d ", IDT);
+            fprintf(stderr, "%d ", IDS1);
+            fprintf(stderr, "%d\n", IDS2);
+
+            all_new_travellers[i][1] = IDT;
+            all_new_travellers[i][2] = IDS1;
+            all_new_travellers[i][3] = IDS2;
+
+        }
+
+        int all_travelers_in_bus[TRAVELERS_IN_BUS][2];
+
+        for (int i = 0; i < TRAVELERS_IN_BUS; i++){
+
+            int IDT = 0, IDB = 0;
+
+            scanf("%d", &IDT);
+            scanf("%d", &IDB);
+            fprintf(stderr, "%d ", IDT);
+            fprintf(stderr, "%d\n", IDB);
+
+            all_travelers_in_bus[i][1] = IDB;
+            all_travelers_in_bus[i][2] = IDB;
+        }
+
+        int all_travelers_reaching_dest[TRAVELERS_REACHING_DEST];
+
+        for(int i = 0; i < TRAVELERS_REACHING_DEST; i++){
+
+            int IDT = 0;
+
+            scanf("%d", &IDT);
+            fprintf(stderr, "%d\n", IDT);
+
+            all_travelers_reaching_dest[i] = IDT;
+
+        }
+
+        // TODO before print : read all outputs with scanf
+        printf("PASS\n");
+        
+        ROUND++;
+
+    //}
 }
 
