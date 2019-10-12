@@ -245,7 +245,7 @@ int main(void){
 
         // TODO before print : read all outputs with scanf
         printf("PASS\n");
-        
+
         ROUND++;
 
     //}
