@@ -97,6 +97,7 @@ int main(void){
     int NB_STATIONS = 3;
     int NB_PLAYERS = 0;
     int ID_PLAYER = 0;
+    int ROUND = 0;
 
     // get number of players and our player number
     scanf("%d", &NB_PLAYERS);
@@ -104,8 +105,8 @@ int main(void){
     fprintf(stderr, "NBP=%d, ", NB_PLAYERS);
     fprintf(stderr, "IDP=%d\n", ID_PLAYER);
 
-    Station *all_stations = malloc(NB_STATIONS *sizeof(Station));
-    Player *all_players = malloc(NB_PLAYERS *sizeof(Player));
+    Station all_stations[NB_STATIONS];
+    Player all_players[NB_PLAYERS];
 
     // Populate stations informations and print them
 
@@ -118,15 +119,14 @@ int main(void){
         scanf("%d", &y);
         scanf("%d", &capacity);
 
-        populate_station(id, x, y, capacity, all_stations);
-        print_station(*all_stations);
+        populate_station(id, x, y, capacity, &all_stations[i]);
+        print_station(all_stations[i]);
 
     }
 
-    int ROUND = 0;
-    fprintf(stderr, "ROUND %d\n", ROUND);
-
     while(1){
+
+        fprintf(stderr, "ROUND %d\n", ROUND);
 
         for(int i = 0; i < NB_PLAYERS; i++){
 
@@ -139,8 +139,8 @@ int main(void){
             scanf("%d", &CT_upgrades);
             scanf("%d", &end);
 
-            populate_player(id, money, SB_upgrades, SP_upgrades, CT_upgrades, end, all_players);
-            print_player(*all_players);
+            populate_player(id, money, SB_upgrades, SP_upgrades, CT_upgrades, end, &all_players[i]);
+            print_player(all_players[i]);
 
         }
 
@@ -170,7 +170,7 @@ int main(void){
         scanf("%d", &NB_BUS);
         fprintf(stderr, "NBBUS=%d\n", NB_BUS);
 
-        Bus *all_bus = malloc(NB_BUS *sizeof(Bus));
+        Bus all_bus[NB_BUS];
 
         for(int i = 0; i < NB_BUS; i++){
 
@@ -183,8 +183,8 @@ int main(void){
             scanf("%d", &station_id);
             scanf("%d", &num_cars);
 
-            populate_bus(id, owner_player_id, x, y, station_id, num_cars, all_bus);
-            print_bus(*all_bus);
+            populate_bus(id, owner_player_id, x, y, station_id, num_cars, &all_bus[i]);
+            print_bus(all_bus[i]);
 
         }
 
@@ -243,8 +243,57 @@ int main(void){
 
         }
 
-        // TODO before print : read all outputs with scanf
-        printf("PASS\n");
+        //IA//
+
+        fprintf(stderr, "PLAYER ID=%d\n", ID_PLAYER);
+        fprintf(stderr, "PLAYER MONEY=%d\n", all_players[ID_PLAYER].money);
+
+        if(NB_BUS == 0 && all_players[ID_PLAYER].money >= 100){
+            printf("BUS 2\n");
+        }else{
+
+            if(NEW_TRAVELERS != 0){
+
+                if(NB_BUS == 1){
+
+                    int distance = 0;
+                    int bus_dest_station = 0;
+
+                    for(int i = 0; i < NEW_TRAVELERS; i++){
+
+                        int start_station_id = all_new_travellers[i][1];
+                        int start_st_x = 0, start_st_y = 0;
+
+                        //Get the departure station
+                        for(int i = 0; i < NB_STATIONS; i++){
+                            if(all_stations[i].id == start_station_id){
+                                start_st_x = all_stations[i].x;
+                                start_st_y = all_stations[i].y;
+                            }
+                        }
+                        fprintf(stderr, "TRAVELER ST DP=%d\n", start_station_id);
+
+                        //Determine which one is the closest to the actual bus
+                        int new_distance = (start_st_x + all_bus[1].x)*(start_st_x + all_bus[1].x) + (start_st_y + all_bus[1].y)*(start_st_y + all_bus[1].y);
+
+                        if(new_distance < distance){
+                            distance = new_distance;
+                            bus_dest_station = start_station_id;
+                            fprintf(stderr, "CLOSEST T=%d\n", all_new_travellers[i][1]);
+                        }
+                    
+                    }
+
+                    printf("DESTINATION 0 %d\n", bus_dest_station);
+
+                }
+            }else{
+                printf("PASS\n");
+            }
+        }
+
+        //IA//
+
 
         ROUND++;
 
