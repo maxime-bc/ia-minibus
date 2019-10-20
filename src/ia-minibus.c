@@ -62,32 +62,32 @@ void populate_bus(int id, int owner_player_id, int x, int y, int station_id, int
 
 void print_station(Station station){
 
-    fprintf(stderr, "%d ", station.id);
-    fprintf(stderr, "%d ", station.x);
-    fprintf(stderr, "%d ", station.y);
-    fprintf(stderr, "%d\n", station.capacity);
+    fprintf(stderr, "IDST=%d, ", station.id);
+    fprintf(stderr, "X=%d, ", station.x);
+    fprintf(stderr, "Y=%d, ", station.y);
+    fprintf(stderr, "K=%d\n", station.capacity);
 
 }
 
 void print_player(Player player){
 
-    fprintf(stderr, "%d ", player.id);
-    fprintf(stderr, "%d ", player.money);
-    fprintf(stderr, "%d ", player.SB_upgrades);
-    fprintf(stderr, "%d ", player.SP_upgrades);
-    fprintf(stderr, "%d ", player.CT_upgrades);
-    fprintf(stderr, "%d\n", player.end);
+    fprintf(stderr, "IDP=%d, ", player.id);
+    fprintf(stderr, "M=%d, ", player.money);
+    fprintf(stderr, "SB=%d, ", player.SB_upgrades);
+    fprintf(stderr, "SP=%d, ", player.SP_upgrades);
+    fprintf(stderr, "CT=%d, ", player.CT_upgrades);
+    fprintf(stderr, "END=%d\n", player.end);
 
 }
 
 void print_bus(Bus bus){
 
-    fprintf(stderr, "%d ", bus.id);
-    fprintf(stderr, "%d ", bus.owner_player_id);
-    fprintf(stderr, "%d ", bus.x);
-    fprintf(stderr, "%d ", bus.y);
-    fprintf(stderr, "%d ", bus.station_id);
-    fprintf(stderr, "%d\n", bus.num_cars);
+    fprintf(stderr, "IDB=%d, ", bus.id);
+    fprintf(stderr, "IDP=%d, ", bus.owner_player_id);
+    fprintf(stderr, "X=%d, ", bus.x);
+    fprintf(stderr, "Y=%d, ", bus.y);
+    fprintf(stderr, "IDST=%d, ", bus.station_id);
+    fprintf(stderr, "NC=%d\n", bus.num_cars);
 
 }
 
@@ -101,8 +101,8 @@ int main(void){
     // get number of players and our player number
     scanf("%d", &NB_PLAYERS);
     scanf("%d", &ID_PLAYER);
-    fprintf(stderr, "%d ", NB_PLAYERS);
-    fprintf(stderr, "%d\n", ID_PLAYER);
+    fprintf(stderr, "NBP=%d, ", NB_PLAYERS);
+    fprintf(stderr, "IDP=%d\n", ID_PLAYER);
 
     Station *all_stations = malloc(NB_STATIONS *sizeof(Station));
     Player *all_players = malloc(NB_PLAYERS *sizeof(Player));
@@ -126,7 +126,7 @@ int main(void){
     int ROUND = 0;
     fprintf(stderr, "ROUND %d\n", ROUND);
 
-    //while(1){
+    while(1){
 
         for(int i = 0; i < NB_PLAYERS; i++){
 
@@ -146,7 +146,7 @@ int main(void){
 
         int is_new_station = 0;
         scanf("%d", &is_new_station);
-        fprintf(stderr, "%d", is_new_station);
+        fprintf(stderr, "NEWST=%d\n", is_new_station);
 
         if(is_new_station){
 
@@ -168,7 +168,7 @@ int main(void){
 
         int NB_BUS = 0;
         scanf("%d", &NB_BUS);
-        fprintf(stderr, "%d\n", NB_BUS);
+        fprintf(stderr, "NBBUS=%d\n", NB_BUS);
 
         Bus *all_bus = malloc(NB_BUS *sizeof(Bus));
 
@@ -192,9 +192,9 @@ int main(void){
         scanf("%d", &NEW_TRAVELERS);
         scanf("%d", &TRAVELERS_IN_BUS);
         scanf("%d", &TRAVELERS_REACHING_DEST);
-        fprintf(stderr, "%d ", NEW_TRAVELERS);
-        fprintf(stderr, "%d ", TRAVELERS_IN_BUS);
-        fprintf(stderr, "%d\n", TRAVELERS_REACHING_DEST);
+        fprintf(stderr, "NT=%d, ", NEW_TRAVELERS);
+        fprintf(stderr, "TB=%d, ", TRAVELERS_IN_BUS);
+        fprintf(stderr, "TD=%d\n", TRAVELERS_REACHING_DEST);
 
         int all_new_travellers[NEW_TRAVELERS][3];
 
@@ -205,9 +205,9 @@ int main(void){
             scanf("%d", &IDT);
             scanf("%d", &IDS1);
             scanf("%d", &IDS2);
-            fprintf(stderr, "%d ", IDT);
-            fprintf(stderr, "%d ", IDS1);
-            fprintf(stderr, "%d\n", IDS2);
+            fprintf(stderr, "IDT=%d, ", IDT);
+            fprintf(stderr, "IDS1=%d, ", IDS1);
+            fprintf(stderr, "IDS2=%d\n", IDS2);
 
             all_new_travellers[i][1] = IDT;
             all_new_travellers[i][2] = IDS1;
@@ -223,8 +223,8 @@ int main(void){
 
             scanf("%d", &IDT);
             scanf("%d", &IDB);
-            fprintf(stderr, "%d ", IDT);
-            fprintf(stderr, "%d\n", IDB);
+            fprintf(stderr, "IDT=%d, ", IDT);
+            fprintf(stderr, "IDB=%d\n", IDB);
 
             all_travelers_in_bus[i][1] = IDB;
             all_travelers_in_bus[i][2] = IDB;
@@ -237,7 +237,7 @@ int main(void){
             int IDT = 0;
 
             scanf("%d", &IDT);
-            fprintf(stderr, "%d\n", IDT);
+            fprintf(stderr, "IDT=%d\n", IDT);
 
             all_travelers_reaching_dest[i] = IDT;
 
@@ -248,6 +248,8 @@ int main(void){
 
         ROUND++;
 
-    //}
+        fflush(stdout);
+
+    }
 }
 
