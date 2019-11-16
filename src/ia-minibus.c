@@ -69,6 +69,14 @@ void print_station(Station station){
 
 }
 
+void print_all_stations(Station station[], int size){
+
+    fprintf(stderr, "ALL STATIONS : \n");
+    for(int i = 0; i < size; i++){
+        print_station(station[i]);
+    }
+}
+
 void print_player(Player player){
 
     fprintf(stderr, "IDP=%d, ", player.id);
@@ -94,7 +102,8 @@ void print_bus(Bus bus){
 int main(void){
 
     // 3 stations are created at the start of the game
-    int NB_STATIONS = 3;
+    int stations_number = 3;
+    int MAX_STATIONS = 10;
     int NB_PLAYERS = 0;
     int ID_PLAYER = 0;
     int ROUND = 0;
@@ -105,12 +114,12 @@ int main(void){
     fprintf(stderr, "NBP=%d, ", NB_PLAYERS);
     fprintf(stderr, "IDP=%d\n", ID_PLAYER);
 
-    Station all_stations[NB_STATIONS];
+    Station all_stations[MAX_STATIONS];
     Player all_players[NB_PLAYERS];
 
     // Populate stations informations and print them
 
-    for(int i = 0; i < NB_STATIONS; i++){
+    for(int i = 0; i < stations_number; i++){
 
         int id = 0, x = 0, y = 0, capacity = 0;
 
@@ -152,8 +161,6 @@ int main(void){
 
             //Each 25 rounds, a new station is added
 
-            Station new_station;
-
             int id = 0, x = 0, y = 0, capacity = 0;
 
             scanf("%d", &id);
@@ -161,9 +168,10 @@ int main(void){
             scanf("%d", &y);
             scanf("%d", &capacity);
 
-            populate_station(id, x, y, capacity, &new_station);
-            print_station(new_station);
-
+            populate_station(id, x, y, capacity, &all_stations[stations_number]);
+            stations_number++;
+            print_all_stations(all_stations, stations_number);
+            
         }
 
         int NB_BUS = 0;
@@ -243,57 +251,58 @@ int main(void){
 
         }
 
-        //IA//
+        // //IA//
 
-        fprintf(stderr, "PLAYER ID=%d\n", ID_PLAYER);
-        fprintf(stderr, "PLAYER MONEY=%d\n", all_players[ID_PLAYER].money);
+        // fprintf(stderr, "PLAYER ID=%d\n", ID_PLAYER);
+        // fprintf(stderr, "PLAYER MONEY=%d\n", all_players[ID_PLAYER].money);
 
-        if(NB_BUS == 0 && all_players[ID_PLAYER].money >= 100){
-            printf("BUS 2\n");
-        }else{
+        // if(NB_BUS == 0 && all_players[ID_PLAYER].money >= 100){
+        //     printf("BUS 2\n");
+        // }else{
 
-            if(NEW_TRAVELERS != 0){
+        //     if(NEW_TRAVELERS != 0){
 
-                if(NB_BUS == 1){
+        //         if(NB_BUS == 1){
 
-                    int distance = 0;
-                    int bus_dest_station = 0;
+        //             int distance = 0;
+        //             int bus_dest_station = 0;
 
-                    for(int i = 0; i < NEW_TRAVELERS; i++){
+        //             for(int i = 0; i < NEW_TRAVELERS; i++){
 
-                        int start_station_id = all_new_travellers[i][1];
-                        int start_st_x = 0, start_st_y = 0;
+        //                 int start_station_id = all_new_travellers[i][1];
+        //                 int start_st_x = 0, start_st_y = 0;
 
-                        //Get the departure station
-                        for(int i = 0; i < NB_STATIONS; i++){
-                            if(all_stations[i].id == start_station_id){
-                                start_st_x = all_stations[i].x;
-                                start_st_y = all_stations[i].y;
-                            }
-                        }
-                        fprintf(stderr, "TRAVELER ST DP=%d\n", start_station_id);
+        //                 //Get the departure station
+        //                 for(int i = 0; i < stations_number; i++){
+        //                     if(all_stations[i].id == start_station_id){
+        //                         start_st_x = all_stations[i].x;
+        //                         start_st_y = all_stations[i].y;
+        //                     }
+        //                 }
+        //                 fprintf(stderr, "TRAVELER ST DP=%d\n", start_station_id);
 
-                        //Determine which one is the closest to the actual bus
-                        int new_distance = (start_st_x + all_bus[1].x)*(start_st_x + all_bus[1].x) + (start_st_y + all_bus[1].y)*(start_st_y + all_bus[1].y);
+        //                 //Determine which one is the closest to the actual bus
+        //                 int new_distance = (start_st_x + all_bus[1].x)*(start_st_x + all_bus[1].x) + (start_st_y + all_bus[1].y)*(start_st_y + all_bus[1].y);
 
-                        if(new_distance < distance){
-                            distance = new_distance;
-                            bus_dest_station = start_station_id;
-                            fprintf(stderr, "CLOSEST T=%d\n", all_new_travellers[i][1]);
-                        }
+        //                 if(new_distance < distance){
+        //                     distance = new_distance;
+        //                     bus_dest_station = start_station_id;
+        //                     fprintf(stderr, "CLOSEST T=%d\n", all_new_travellers[i][1]);
+        //                 }
                     
-                    }
+        //             }
 
-                    printf("DESTINATION 0 %d\n", bus_dest_station);
+        //             printf("DESTINATION 0 %d\n", bus_dest_station);
 
-                }
-            }else{
-                printf("PASS\n");
-            }
-        }
+        //         }
+        //     }else{
+        //         printf("PASS\n");
+        //     }
+        // }
 
-        //IA//
+        // //IA//
 
+        printf("PASS\n");
 
         ROUND++;
 
