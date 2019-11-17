@@ -19,6 +19,15 @@ struct Player{
     int end;
 };
 
+typedef struct Traveler Traveler;
+struct Traveler{
+    int id;
+    int ids1;
+    int ids2;
+    int id_bus;
+    int at_dest;
+};
+
 typedef struct Bus Bus;
 struct Bus{
     int id;
@@ -57,6 +66,16 @@ void populate_bus(int id, int owner_player_id, int x, int y, int station_id, int
     bus->y = y;
     bus->station_id = station_id;
     bus->num_cars = num_cars;
+
+}
+
+void populate_traveler(Traveler *traveler, int id, int ids1, int ids2, int id_bus, int at_dest){
+
+    traveler->id = id;
+    traveler->ids1 = ids1;
+    traveler->ids2 = ids2;
+    traveler->id_bus = id_bus;
+    traveler->at_dest = at_dest;
 
 }
 
@@ -99,6 +118,39 @@ void print_bus(Bus bus){
 
 }
 
+void print_traveler(Traveler traveler){
+
+    fprintf(stderr, "IDT=%d, ", traveler.id);
+    fprintf(stderr, "IDS1=%d, ", traveler.ids1);
+    fprintf(stderr, "IDS2=%d, ", traveler.ids2);
+    fprintf(stderr, "ID_BUS=%d", traveler.id_bus);
+    fprintf(stderr, "AT_DEST=%d\n", traveler.at_dest);
+
+}
+
+void print_all_travelers(Traveler* travelers_array, int size){
+
+    fprintf(stderr, "ALL TRAVELERS : \n");
+    for(int i = 0; i < size; i++){
+        print_traveler(travelers_array[i]);
+    }
+}
+
+int increase_travelers_array(Traveler **travelers_array, int current_size, int numNewElems){
+    
+    const int totalSize = current_size + numNewElems;
+    Traveler *temp = realloc(*travelers_array, (totalSize * sizeof(Traveler)));
+
+    if (temp == NULL){
+        printf("Cannot allocate more memory.\n");
+        return 0;
+    }else{
+        *travelers_array = temp;
+    }
+
+    return totalSize;
+}
+
 int main(void){
 
     // 3 stations are created at the start of the game
@@ -116,6 +168,14 @@ int main(void){
 
     Station all_stations[MAX_STATIONS];
     Player all_players[NB_PLAYERS];
+
+    int size = 0;
+    Traveler* travelers_array = malloc(0 * sizeof(Traveler *));
+    
+    if(travelers_array == NULL){
+        printf("Cannot allocate initial memory for data\n");
+        exit(1);
+    }
 
     // Populate stations informations and print them
 
@@ -196,31 +256,35 @@ int main(void){
 
         }
 
-        int NEW_TRAVELERS = 0, TRAVELERS_IN_BUS = 0, TRAVELERS_REACHING_DEST = 0;
-        scanf("%d", &NEW_TRAVELERS);
+        int new_travelers = 0, TRAVELERS_IN_BUS = 0, TRAVELERS_REACHING_DEST = 0;
+        scanf("%d", &new_travelers);
         scanf("%d", &TRAVELERS_IN_BUS);
         scanf("%d", &TRAVELERS_REACHING_DEST);
-        fprintf(stderr, "NT=%d, ", NEW_TRAVELERS);
+        fprintf(stderr, "NT=%d, ", new_travelers);
         fprintf(stderr, "TB=%d, ", TRAVELERS_IN_BUS);
         fprintf(stderr, "TD=%d\n", TRAVELERS_REACHING_DEST);
 
-        int all_new_travellers[NEW_TRAVELERS][3];
+        if(new_travelers != 0){
 
-        for(int i = 0; i < NEW_TRAVELERS; i ++){
+            int tmp = size;
+            size = increase_travelers_array(&travelers_array, size, new_travelers);
 
-            int IDT = 0, IDS1 = 0, IDS2 = 0;
+            fprintf(stderr, "NEW TRAVELERS :  \n");
 
-            scanf("%d", &IDT);
-            scanf("%d", &IDS1);
-            scanf("%d", &IDS2);
-            fprintf(stderr, "IDT=%d, ", IDT);
-            fprintf(stderr, "IDS1=%d, ", IDS1);
-            fprintf(stderr, "IDS2=%d\n", IDS2);
+            for(int i = tmp; i < size; i ++){
 
-            all_new_travellers[i][1] = IDT;
-            all_new_travellers[i][2] = IDS1;
-            all_new_travellers[i][3] = IDS2;
+                int IDT = 0, IDS1 = 0, IDS2 = 0;
 
+                scanf("%d", &IDT);
+                scanf("%d", &IDS1);
+                scanf("%d", &IDS2);
+                
+                populate_traveler(&travelers_array[i], IDT, IDS1, IDS2, -1, 0);
+                //print_traveler(travelers_array[i]);
+
+            }
+
+            print_all_travelers(travelers_array, size);
         }
 
         int all_travelers_in_bus[TRAVELERS_IN_BUS][2];
@@ -260,14 +324,14 @@ int main(void){
         //     printf("BUS 2\n");
         // }else{
 
-        //     if(NEW_TRAVELERS != 0){
+        //     if(new_travelers != 0){
 
         //         if(NB_BUS == 1){
 
         //             int distance = 0;
         //             int bus_dest_station = 0;
 
-        //             for(int i = 0; i < NEW_TRAVELERS; i++){
+        //             for(int i = 0; i < new_travelers; i++){
 
         //                 int start_station_id = all_new_travellers[i][1];
         //                 int start_st_x = 0, start_st_y = 0;
