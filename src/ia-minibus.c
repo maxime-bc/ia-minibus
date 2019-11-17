@@ -136,10 +136,10 @@ void print_all_travelers(Traveler* travelers_array, int travelers_num){
     }
 }
 
-int increase_travelers_array(Traveler **travelers_array, int current_size, int numNewElems){
+int increase_travelers_array(Traveler **travelers_array, int current_size, int num_new_elems){
     
-    const int totalSize = current_size + numNewElems;
-    Traveler *temp = realloc(*travelers_array, (totalSize * sizeof(Traveler)));
+    const int total_size = current_size + num_new_elems;
+    Traveler *temp = realloc(*travelers_array, (total_size * sizeof(Traveler)));
 
     if (temp == NULL){
         printf("Cannot allocate more memory.\n");
@@ -148,14 +148,26 @@ int increase_travelers_array(Traveler **travelers_array, int current_size, int n
         *travelers_array = temp;
     }
 
-    return totalSize;
+    return total_size;
+}
+
+int increase_stations_array(Station **travelers_array, int current_size, int num_new_elems){
+    
+    const int total_size = current_size + num_new_elems;
+    Station *temp = realloc(*travelers_array, (total_size * sizeof(Station)));
+
+    if (temp == NULL){
+        printf("Cannot allocate more memory.\n");
+        return 0;
+    }else{
+        *travelers_array = temp;
+    }
+
+    return total_size;
 }
 
 int main(void){
 
-    // 3 stations are created at the start of the game
-    int stations_number = 3;
-    int MAX_STATIONS = 10;
     int NB_PLAYERS = 0;
     int ID_PLAYER = 0;
     int ROUND = 0;
@@ -166,20 +178,21 @@ int main(void){
     fprintf(stderr, "NBP=%d, ", NB_PLAYERS);
     fprintf(stderr, "IDP=%d\n", ID_PLAYER);
 
-    Station all_stations[MAX_STATIONS];
     Player all_players[NB_PLAYERS];
 
-    int travelers_num = 0;
+    int travelers_num = 0, stations_num = 0;
     Traveler* travelers_array = malloc(0 * sizeof(Traveler *));
+    Station* stations_array = malloc(0 * sizeof(Station *));
     
-    if(travelers_array == NULL){
+    if(travelers_array == NULL || stations_array == NULL){
         printf("Cannot allocate initial memory for data\n");
         exit(1);
     }
 
-    // Populate stations informations and print them
+    stations_num = increase_stations_array(&stations_array, stations_num, 3);
 
-    for(int i = 0; i < stations_number; i++){
+    // Populate stations informations and print them
+    for(int i = 0; i < stations_num; i++){
 
         int id = 0, x = 0, y = 0, capacity = 0;
 
@@ -188,8 +201,7 @@ int main(void){
         scanf("%d", &y);
         scanf("%d", &capacity);
 
-        populate_station(id, x, y, capacity, &all_stations[i]);
-        print_station(all_stations[i]);
+        populate_station(id, x, y, capacity, &stations_array[i]);
 
     }
 
@@ -219,7 +231,8 @@ int main(void){
 
         if(is_new_station){
 
-            //Each 25 rounds, a new station is added
+            int tmp = stations_num;
+            stations_num = increase_stations_array(&stations_array, stations_num, 1);
 
             int id = 0, x = 0, y = 0, capacity = 0;
 
@@ -228,9 +241,8 @@ int main(void){
             scanf("%d", &y);
             scanf("%d", &capacity);
 
-            populate_station(id, x, y, capacity, &all_stations[stations_number]);
-            stations_number++;
-            print_all_stations(all_stations, stations_number);
+            populate_station(id, x, y, capacity, &stations_array[tmp]);
+            print_all_stations(stations_array, stations_num);
             
         }
 
@@ -337,10 +349,10 @@ int main(void){
         //                 int start_st_x = 0, start_st_y = 0;
 
         //                 //Get the departure station
-        //                 for(int i = 0; i < stations_number; i++){
-        //                     if(all_stations[i].id == start_station_id){
-        //                         start_st_x = all_stations[i].x;
-        //                         start_st_y = all_stations[i].y;
+        //                 for(int i = 0; i < stations_num; i++){
+        //                     if(stations_array[i].id == start_station_id){
+        //                         start_st_x = stations_array[i].x;
+        //                         start_st_y = stations_array[i].y;
         //                     }
         //                 }
         //                 fprintf(stderr, "TRAVELER ST DP=%d\n", start_station_id);
