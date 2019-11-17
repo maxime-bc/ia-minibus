@@ -88,10 +88,10 @@ void print_station(Station station){
 
 }
 
-void print_all_stations(Station station[], int size){
+void print_all_stations(Station station[], int travelers_num){
 
     fprintf(stderr, "ALL STATIONS : \n");
-    for(int i = 0; i < size; i++){
+    for(int i = 0; i < travelers_num; i++){
         print_station(station[i]);
     }
 }
@@ -128,10 +128,10 @@ void print_traveler(Traveler traveler){
 
 }
 
-void print_all_travelers(Traveler* travelers_array, int size){
+void print_all_travelers(Traveler* travelers_array, int travelers_num){
 
     fprintf(stderr, "ALL TRAVELERS : \n");
-    for(int i = 0; i < size; i++){
+    for(int i = 0; i < travelers_num; i++){
         print_traveler(travelers_array[i]);
     }
 }
@@ -169,7 +169,7 @@ int main(void){
     Station all_stations[MAX_STATIONS];
     Player all_players[NB_PLAYERS];
 
-    int size = 0;
+    int travelers_num = 0;
     Traveler* travelers_array = malloc(0 * sizeof(Traveler *));
     
     if(travelers_array == NULL){
@@ -266,12 +266,12 @@ int main(void){
 
         if(new_travelers != 0){
 
-            int tmp = size;
-            size = increase_travelers_array(&travelers_array, size, new_travelers);
+            int actual_travelers_num = travelers_num;
+            travelers_num = increase_travelers_array(&travelers_array, travelers_num, new_travelers);
 
             fprintf(stderr, "NEW TRAVELERS :  \n");
 
-            for(int i = tmp; i < size; i ++){
+            for(int i = actual_travelers_num; i < travelers_num; i ++){
 
                 int IDT = 0, IDS1 = 0, IDS2 = 0;
 
@@ -280,11 +280,11 @@ int main(void){
                 scanf("%d", &IDS2);
                 
                 populate_traveler(&travelers_array[i], IDT, IDS1, IDS2, -1, 0);
-                //print_traveler(travelers_array[i]);
+                print_traveler(travelers_array[i]);
 
             }
 
-            print_all_travelers(travelers_array, size);
+            //print_all_travelers(travelers_array, travelers_num);
         }
 
         int all_travelers_in_bus[TRAVELERS_IN_BUS][2];
