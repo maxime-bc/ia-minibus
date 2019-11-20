@@ -176,7 +176,7 @@ void update_travelers_in_bus(Traveler *travelers_array, int travelers_num, int t
 
             Traveler *traveler = &travelers_array[i];
 
-            if(traveler->at_dest == 0){
+            if(!traveler->at_dest){
 
                 if(traveler->id == travelers_in_bus[j][0]){
                     traveler->id_bus = travelers_in_bus[j][1];
@@ -195,7 +195,7 @@ void update_travelers_reaching_dest(Traveler *travelers_array, int travelers_num
 
             Traveler *traveler = &travelers_array[i];
 
-            if(traveler->at_dest == 0){
+            if(!traveler->at_dest){
 
                 if(traveler->id == travelers_reaching_dest[j]){
                     traveler->at_dest = 1;
