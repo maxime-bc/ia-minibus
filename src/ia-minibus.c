@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+const int IN_BUS_ARRAY_SIZE = 2;
+
 typedef struct Station Station;
 struct Station{
     int id;
@@ -166,6 +168,44 @@ int increase_stations_array(Station **travelers_array, int current_size, int num
     return total_size;
 }
 
+void update_travelers_in_bus(Traveler* travelers_array, int travelers_num, int travelers_in_bus[][IN_BUS_ARRAY_SIZE], int in_bus_number){
+
+    // TODO : filter to remove travelers who reached dest
+    for(int i = 0; i < travelers_num; i++){
+
+        for(int j = 0; j < in_bus_number; j++){
+
+            if(travelers_array[i].id == travelers_in_bus[j][0]){
+                travelers_array[i].id_bus = travelers_in_bus[j][1];
+                fprintf(stderr, "UPDATED %d IS NOW IN %d\n", travelers_array[i].id, travelers_array[i].id_bus);
+            }
+        }
+    }  
+}
+
+void update_travelers_reaching_dest(Traveler* travelers_array, int travelers_num, int travelers_reaching_dest[], int reaching_dest){
+
+    // TODO : filter to remove travelers who reached dest
+    for(int i = 0; i < travelers_num; i++){
+
+        for(int j = 0; j < reaching_dest; j++){
+
+            if(travelers_array[i].id == travelers_reaching_dest[j]){
+                travelers_array[i].at_dest = 1;
+                fprintf(stderr, "UPDATED %d IS AT DEST : %d\n", travelers_array[i].id, travelers_array[i].at_dest);
+            }
+        }
+    }
+}
+
+// TODO
+void remove_travelers_at_dest(){
+    int i = 0;
+
+
+
+}
+
 int main(void){
 
     int NB_PLAYERS = 0;
@@ -246,13 +286,13 @@ int main(void){
             
         }
 
-        int NB_BUS = 0;
-        scanf("%d", &NB_BUS);
-        fprintf(stderr, "NBBUS=%d\n", NB_BUS);
+        int bus_nb = 0;
+        scanf("%d", &bus_nb);
+        fprintf(stderr, "NBBUS=%d\n", bus_nb);
 
-        Bus all_bus[NB_BUS];
+        Bus all_bus[bus_nb];
 
-        for(int i = 0; i < NB_BUS; i++){
+        for(int i = 0; i < bus_nb; i++){
 
             int id = 0, owner_player_id = 0, x = 0, y = 0, station_id = 0, num_cars = 0;
 
@@ -268,13 +308,13 @@ int main(void){
 
         }
 
-        int new_travelers = 0, TRAVELERS_IN_BUS = 0, TRAVELERS_REACHING_DEST = 0;
+        int new_travelers = 0, travelers_in_bus = 0, travelers_reaching_dest = 0;
         scanf("%d", &new_travelers);
-        scanf("%d", &TRAVELERS_IN_BUS);
-        scanf("%d", &TRAVELERS_REACHING_DEST);
+        scanf("%d", &travelers_in_bus);
+        scanf("%d", &travelers_reaching_dest);
         fprintf(stderr, "NT=%d, ", new_travelers);
-        fprintf(stderr, "TB=%d, ", TRAVELERS_IN_BUS);
-        fprintf(stderr, "TD=%d\n", TRAVELERS_REACHING_DEST);
+        fprintf(stderr, "TB=%d, ", travelers_in_bus);
+        fprintf(stderr, "TD=%d\n", travelers_reaching_dest);
 
         if(new_travelers != 0){
 
@@ -299,32 +339,40 @@ int main(void){
             //print_all_travelers(travelers_array, travelers_num);
         }
 
-        int all_travelers_in_bus[TRAVELERS_IN_BUS][2];
+        if(travelers_in_bus != 0){
 
-        for (int i = 0; i < TRAVELERS_IN_BUS; i++){
+            int all_travelers_in_bus[travelers_in_bus][IN_BUS_ARRAY_SIZE];
+            
+            for (int i = 0; i < travelers_in_bus; i++){
 
-            int IDT = 0, IDB = 0;
+                int IDT = 0, IDB = 0;
+                scanf("%d", &IDT);
+                scanf("%d", &IDB);
+                fprintf(stderr, "IDT=%d, ", IDT);
+                fprintf(stderr, "IDB=%d\n", IDB);
+                all_travelers_in_bus[i][0] = IDT;
+                all_travelers_in_bus[i][1] = IDB;
 
-            scanf("%d", &IDT);
-            scanf("%d", &IDB);
-            fprintf(stderr, "IDT=%d, ", IDT);
-            fprintf(stderr, "IDB=%d\n", IDB);
+            }
 
-            all_travelers_in_bus[i][1] = IDB;
-            all_travelers_in_bus[i][2] = IDB;
+            update_travelers_in_bus(travelers_array, travelers_num, all_travelers_in_bus, travelers_in_bus);
         }
 
-        int all_travelers_reaching_dest[TRAVELERS_REACHING_DEST];
+        if(travelers_reaching_dest != 0){
 
-        for(int i = 0; i < TRAVELERS_REACHING_DEST; i++){
+            int all_travelers_reaching_dest[travelers_reaching_dest];
 
-            int IDT = 0;
+            for(int i = 0; i < travelers_reaching_dest; i++){
 
-            scanf("%d", &IDT);
-            fprintf(stderr, "IDT=%d\n", IDT);
+                int IDT = 0;
+                scanf("%d", &IDT);
+                fprintf(stderr, "IDT=%d\n", IDT);
 
-            all_travelers_reaching_dest[i] = IDT;
+                all_travelers_reaching_dest[i] = IDT;
 
+            }
+
+            update_travelers_reaching_dest(travelers_array, travelers_num, all_travelers_reaching_dest, travelers_reaching_dest);
         }
 
         // //IA//
@@ -332,13 +380,13 @@ int main(void){
         // fprintf(stderr, "PLAYER ID=%d\n", ID_PLAYER);
         // fprintf(stderr, "PLAYER MONEY=%d\n", all_players[ID_PLAYER].money);
 
-        // if(NB_BUS == 0 && all_players[ID_PLAYER].money >= 100){
+        // if(bus_nb == 0 && all_players[ID_PLAYER].money >= 100){
         //     printf("BUS 2\n");
         // }else{
 
         //     if(new_travelers != 0){
 
-        //         if(NB_BUS == 1){
+        //         if(bus_nb == 1){
 
         //             int distance = 0;
         //             int bus_dest_station = 0;
