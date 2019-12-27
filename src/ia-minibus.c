@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 const int IN_BUS_ARRAY_SIZE = 2;
 
@@ -226,7 +227,11 @@ Traveler *sort_travelers_by_station(Traveler *travelers_array, int travelers_num
     return station_travelers_array;
 }
 
-void get_station_with_most_travelers(Traveler *travelers_array, int travelers_num, int stations_num) {
+int get_station_with_most_travelers(Traveler *travelers_array, int travelers_num, int stations_num) {
+
+    int max = 0;
+    int station = -1;
+    int travelers_num_per_station[stations_num];
 
     for (int i = 0; i < stations_num; i++) {
 
@@ -234,19 +239,62 @@ void get_station_with_most_travelers(Traveler *travelers_array, int travelers_nu
         Traveler *all_travelers_in_station = sort_travelers_by_station(travelers_array, travelers_num, i,
                                                                        &travelers_in_station);
 
+        travelers_num_per_station[i] = travelers_in_station;
+
         if(travelers_in_station > 0) {
             fprintf(stderr, "In ST %d : \n", i);
             print_all_travelers(all_travelers_in_station, travelers_in_station);
         }
 
     }
+
+    for (int i = 0; i < stations_num; i++){
+        if (travelers_num_per_station[i] > max){
+            max = travelers_num_per_station[i];
+            station = i;
+        }
+    }
+
+    fprintf(stderr, "Max : %d travelers in ST %d\n", max, station);
+
+    return station;
 }
+
+// get bus with bus_array[bus_id] and station with stations_array[station_id]
+int bus_arrived(Bus bus, Station station){
+
+    if(bus.x == station.x && bus.y == station.y){
+        return 1;
+    }else{
+        return 0;
+    }
+}
+
+/*
+int is_bus_full(Bus bus, Traveler* travelers, int travelers_num){
+
+    int travelers_in_bus_number = 0;
+
+    for(int i = 0; i < travelers_num; i++){
+
+        if(travelers[i].id_bus == bus.id){
+            travelers_in_bus_number++;
+        }
+    }
+
+    if(travelers_in_bus_number == )
+
+}
+ */
+
 
 int main(void){
 
     int player_num = 0;
     int player_id = 0;
     int round = 0;
+
+    srand(time(NULL));
 
     // get number of players and our player id
     scanf("%d", &player_num);
@@ -279,6 +327,12 @@ int main(void){
         populate_station(id, x, y, capacity, &stations_array[i]);
 
     }
+
+    int my_nb_bus = 0;
+    int tmp = 0;
+    int random_station = -1;
+    int generate_new_station = 1;
+    int is_arrived = 0;
 
     while(1){
 
@@ -323,7 +377,7 @@ int main(void){
         scanf("%d", &bus_nb);
         fprintf(stderr, "NBBUS=%d\n", bus_nb);
 
-        Bus all_bus[bus_nb];
+        Bus bus_array[bus_nb];
 
         for(int i = 0; i < bus_nb; i++){
 
@@ -336,8 +390,8 @@ int main(void){
             scanf("%d", &station_id);
             scanf("%d", &num_cars);
 
-            populate_bus(id, owner_player_id, x, y, station_id, num_cars, &all_bus[i]);
-            print_bus(all_bus[i]);
+            populate_bus(id, owner_player_id, x, y, station_id, num_cars, &bus_array[i]);
+            print_bus(bus_array[i]);
 
         }
 
@@ -402,8 +456,46 @@ int main(void){
             update_travelers_reaching_dest(travelers_array, travelers_num, all_travelers_reaching_dest, travelers_reaching_dest);
         }
 
-        get_station_with_most_travelers(travelers_array, travelers_num, stations_num);
+        if(generate_new_station){
 
+            random_station = (rand()%stations_num);
+            generate_new_station = 0;
+            fprintf(stderr, "THE BUS IS GOING TO THE ST %d\n", random_station);
+        }
+
+        if(my_nb_bus == 0){
+            printf("BUS %d\n", random_station);
+            my_nb_bus++;
+            generate_new_station = 0;
+
+        } else {
+
+            fprintf(stderr, "IN THE ELSE\n");
+            fprintf(stderr, "MY BUS X: %d, Y: %d\n", bus_array[1].x, bus_array[1].y);
+            fprintf(stderr, "THE STATION X: %d, Y: %d\n", stations_array[random_station].x, stations_array[random_station].y);
+            fprintf(stderr, "TMP = %d\n", tmp);
+
+            if(bus_arrived(bus_array[1], stations_array[random_station])) {
+
+                if(tmp == 0){
+
+                    printf("PASS\n");
+                    tmp++;
+
+                }else{
+
+                    random_station = (rand() % stations_num);
+                    printf("DESTINATION 1 %d\n", random_station);
+
+                    tmp = 0;
+                }
+
+            }else{
+                printf("DESTINATION 1 %d\n", random_station);
+                tmp = 0;
+            }
+
+        }
         // //IA//
 
         // fprintf(stderr, "PLAYER ID=%d\n", player_id);
@@ -435,7 +527,7 @@ int main(void){
         //                 fprintf(stderr, "TRAVELER ST DP=%d\n", start_station_id);
 
         //                 //Determine which one is the closest to the actual bus
-        //                 int new_distance = (start_st_x + all_bus[1].x)*(start_st_x + all_bus[1].x) + (start_st_y + all_bus[1].y)*(start_st_y + all_bus[1].y);
+        //                 int new_distance = (start_st_x + bus_array[1].x)*(start_st_x + bus_array[1].x) + (start_st_y + bus_array[1].y)*(start_st_y + bus_array[1].y);
 
         //                 if(new_distance < distance){
         //                     distance = new_distance;
@@ -454,8 +546,6 @@ int main(void){
         // }
 
         // //IA//
-
-        printf("PASS\n");
 
         round++;
 
