@@ -132,7 +132,6 @@ void print_traveler(Traveler traveler){
 
 void print_all_travelers(Traveler *travelers_array, int travelers_num){
 
-    fprintf(stderr, "ALL TRAVELERS : \n");
     for(int i = 0; i < travelers_num; i++){
         print_traveler(travelers_array[i]);
     }
@@ -187,7 +186,7 @@ void update_travelers_in_bus(Traveler *travelers_array, int travelers_num, int t
     }  
 }
 
-void update_travelers_reaching_dest(Traveler *travelers_array, int travelers_num, int travelers_reaching_dest[], int reaching_dest){
+void update_travelers_reaching_dest(Traveler *travelers_array, int travelers_num, const int travelers_reaching_dest[], int reaching_dest){
 
     for(int i = 0; i < travelers_num; i++){
 
@@ -203,6 +202,43 @@ void update_travelers_reaching_dest(Traveler *travelers_array, int travelers_num
                 }
             }
         }
+    }
+}
+
+Traveler *sort_travelers_by_station(Traveler *travelers_array, int travelers_num, int station_id, int *travelers_in_station) {
+
+    Traveler* station_travelers_array = malloc(0 * sizeof(Traveler *));
+
+    for (int i = 0; i < travelers_num; i++) {
+
+        if (station_id == travelers_array[i].ids1 && travelers_array[i].id_bus == -1) {
+            increase_travelers_array(&station_travelers_array, *travelers_in_station, 1);
+            populate_traveler(&station_travelers_array[*travelers_in_station],
+                    travelers_array[i].id,
+                    travelers_array[i].ids1,
+                    travelers_array[i].ids2,
+                    travelers_array[i].id_bus,
+                    travelers_array[i].at_dest);
+            *travelers_in_station = *travelers_in_station+1;
+        }
+    }
+
+    return station_travelers_array;
+}
+
+void get_station_with_most_travelers(Traveler *travelers_array, int travelers_num, int stations_num) {
+
+    for (int i = 0; i < stations_num; i++) {
+
+        int travelers_in_station = 0;
+        Traveler *all_travelers_in_station = sort_travelers_by_station(travelers_array, travelers_num, i,
+                                                                       &travelers_in_station);
+
+        if(travelers_in_station > 0) {
+            fprintf(stderr, "In ST %d : \n", i);
+            print_all_travelers(all_travelers_in_station, travelers_in_station);
+        }
+
     }
 }
 
@@ -366,7 +402,7 @@ int main(void){
             update_travelers_reaching_dest(travelers_array, travelers_num, all_travelers_reaching_dest, travelers_reaching_dest);
         }
 
-        print_all_travelers(travelers_array, travelers_num);
+        get_station_with_most_travelers(travelers_array, travelers_num, stations_num);
 
         // //IA//
 

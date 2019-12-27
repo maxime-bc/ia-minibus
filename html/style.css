@@ -165,7 +165,7 @@ div{
     line-height: 50px;
 }
 
-.stdout, .stderr, .gameInformation{
+.stdout, .gameInformation{
     position:relative; /* Enable absolute position of the span inside this div */
 
     overflow: auto;
@@ -173,6 +173,22 @@ div{
     
     height:80%;
     width:25%;
+    
+    padding-left:3px;
+    padding-right:3px;
+    
+    border-left: solid white 1px;
+    border-right: solid white 1px;
+}
+
+.stderr{
+    position:relative; /* Enable absolute position of the span inside this div */
+
+    overflow: auto;
+    display: inline-block;
+    
+    height:80%;
+    width:50%;
     
     padding-left:3px;
     padding-right:3px;
