@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
+
+#define BUFFER_SIZE 256
 
 const int IN_BUS_ARRAY_SIZE = 2;
 
@@ -332,7 +335,8 @@ int main(void){
     int tmp = 0;
     int random_station = -1;
     int generate_new_station = 1;
-    int is_arrived = 0;
+
+    int update_sp_counter = 0;
 
     while(1){
 
@@ -456,6 +460,10 @@ int main(void){
             update_travelers_reaching_dest(travelers_array, travelers_num, all_travelers_reaching_dest, travelers_reaching_dest);
         }
 
+        // ----- IA starts here -----
+
+        char command_buffer[BUFFER_SIZE];
+
         if(generate_new_station){
 
             random_station = (rand()%stations_num);
@@ -464,38 +472,43 @@ int main(void){
         }
 
         if(my_nb_bus == 0){
-            printf("BUS %d\n", random_station);
+            snprintf(command_buffer, BUFFER_SIZE, "BUS %d", random_station);
             my_nb_bus++;
             generate_new_station = 0;
 
         } else {
 
-            fprintf(stderr, "IN THE ELSE\n");
-            fprintf(stderr, "MY BUS X: %d, Y: %d\n", bus_array[1].x, bus_array[1].y);
-            fprintf(stderr, "THE STATION X: %d, Y: %d\n", stations_array[random_station].x, stations_array[random_station].y);
-            fprintf(stderr, "TMP = %d\n", tmp);
+            if(players_array[player_id].money >= 200 && update_sp_counter < 2){
+                //strcat(buffer, "UPDATESP\n");
+                update_sp_counter++;
+                fprintf(stderr, "BUS SPEED HAVE BEEN UPDATED\n");
+            }
 
             if(bus_arrived(bus_array[1], stations_array[random_station])) {
 
                 if(tmp == 0){
 
-                    printf("PASS\n");
+                    snprintf(command_buffer, BUFFER_SIZE, "PASS");
                     tmp++;
 
                 }else{
 
                     random_station = (rand() % stations_num);
-                    printf("DESTINATION 1 %d\n", random_station);
+                snprintf(command_buffer, BUFFER_SIZE, "DESTINATION 1 %d", random_station);
 
                     tmp = 0;
                 }
 
             }else{
-                printf("DESTINATION 1 %d\n", random_station);
+                snprintf(command_buffer, BUFFER_SIZE, "DESTINATION 1 %d", random_station);
                 tmp = 0;
             }
 
         }
+
+        fprintf(stderr, "COMMAND : %s\n", command_buffer);
+        printf("%s\n", command_buffer);
+
         // //IA//
 
         // fprintf(stderr, "PLAYER ID=%d\n", player_id);
