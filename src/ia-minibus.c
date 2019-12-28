@@ -479,12 +479,11 @@ int main(void){
         } else {
 
             if(players_array[player_id].money >= 200 && update_sp_counter < 2){
-                //strcat(buffer, "UPDATESP\n");
+                snprintf(command_buffer, BUFFER_SIZE, "UPDATESP");
                 update_sp_counter++;
                 fprintf(stderr, "BUS SPEED HAVE BEEN UPDATED\n");
-            }
 
-            if(bus_arrived(bus_array[1], stations_array[random_station])) {
+            }else if (bus_arrived(bus_array[1], stations_array[random_station])) {
 
                 if(tmp == 0){
 
