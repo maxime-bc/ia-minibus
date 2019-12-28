@@ -202,6 +202,7 @@ void update_travelers_reaching_dest(Traveler *travelers_array, int travelers_num
 
                 if(traveler->id == travelers_reaching_dest[j]){
                     traveler->at_dest = 1;
+                    traveler->id_bus = -1;
                     //fprintf(stderr, "UPDATED %d IS AT DEST : %d\n", traveler.id, traveler.at_dest);
                 }
             }
@@ -289,6 +290,111 @@ int is_bus_full(Bus bus, Traveler* travelers, int travelers_num){
 
 }
  */
+
+
+Traveler *get_all_travelers_in_bus(Bus bus, Traveler *travelers, int travelers_num, int *travelers_in_bus_num){
+
+    *travelers_in_bus_num = 0;
+    Traveler* travelers_in_bus_array = malloc(0 * sizeof(Traveler *));
+
+    for(int i = 0; i < travelers_num; i++){
+
+        if(travelers[i].id_bus == bus.id){
+
+            increase_travelers_array(&travelers_in_bus_array, *travelers_in_bus_num, 1);
+            travelers_in_bus_array[*travelers_in_bus_num] = travelers[i];
+            *travelers_in_bus_num = *travelers_in_bus_num + 1;
+        }
+    }
+
+    return travelers_in_bus_array;
+}
+
+/* qsort int comparison function */
+int int_cmp(const void *a, const void *b)
+{
+    const int *ia = (const int *)a; // casting pointer types
+    const int *ib = (const int *)b;
+    return *ia  - *ib;
+    /* integer comparison: returns negative if b > a
+    and positive if a > b */
+}
+
+// Returns number of times x occurs in arr[0..n-1]
+int countOccurrences(const int arr[], int n, int x){
+
+    int res = 0;
+    for (int i=0; i<n; i++)
+        if (x == arr[i])
+            res++;
+    return res;
+}
+
+int get_the_most_popular_station(Traveler *travelers_in_bus, const int *travelers_in_bus_num){
+
+    int count, station_id_array[*travelers_in_bus_num], freq[*travelers_in_bus_num];
+
+    if(*travelers_in_bus_num == 1){
+        return travelers_in_bus[0].ids2;
+    }
+
+    for(int i = 0; i < *travelers_in_bus_num; i++){
+        station_id_array[i] = travelers_in_bus[i].ids2;
+        /* Initialize freq array */
+        freq[i] = -1;
+    }
+
+    qsort(station_id_array, *travelers_in_bus_num, sizeof(int), int_cmp);
+
+    fprintf(stderr, "SORTED STATION ARRAY\n");
+    for(int i = 0; i < *travelers_in_bus_num; i++){
+        fprintf(stderr, "%d, ", station_id_array[i]);
+
+    }
+
+    for(int i=0; i < *travelers_in_bus_num; i++){
+
+        count = 1;
+
+        for(int j=i+1; j < *travelers_in_bus_num; j++){
+            /* If duplicate element is found */
+            if(station_id_array[i] == station_id_array[j]){
+
+                count++;
+                /* Make sure not to count frequency of same element again */
+                freq[j] = 0;
+            }
+        }
+
+        /* If frequency of current element is not counted */
+        if(freq[i] != 0){
+            freq[i] = count;
+        }
+    }
+
+    /*
+     * Print frequency of each element
+     */
+    fprintf(stderr,"\nFrequency of all elements of array : \n");
+    for(int i=0; i < *travelers_in_bus_num; i++)
+    {
+        if(freq[i] != 0)
+        {
+            fprintf(stderr,"%d occurs %d times\n", station_id_array[i], freq[i]);
+        }
+    }
+
+    int maxValue = 0, index = -1;
+
+    for (int i = 0; i < *travelers_in_bus_num; ++i) {
+        if ( freq[i] > maxValue ) {
+            maxValue = freq[i];
+            index = i;
+        }
+    }
+
+    return station_id_array[index];
+}
 
 
 int main(void){
@@ -461,6 +567,19 @@ int main(void){
         }
 
         // ----- IA starts here -----
+
+        print_all_travelers(travelers_array, travelers_num);
+
+        int travelers_in_bus_num = 0;
+        Traveler *travelers_in_bus_array = get_all_travelers_in_bus(bus_array[1], travelers_array, travelers_num, &travelers_in_bus_num);
+        int most_popular_station_id = get_the_most_popular_station(travelers_in_bus_array, &travelers_in_bus_num);
+
+        if(most_popular_station_id != -1){
+            fprintf(stderr, "MOST TRAVELERS WANTS TO GO TO THE STATION %d.\n", most_popular_station_id);
+        }
+
+        fprintf(stderr, "IN MY BUS, %d TRAVELERS\n", travelers_in_bus_num);
+        print_all_travelers(travelers_in_bus_array, travelers_in_bus_num);
 
         char command_buffer[BUFFER_SIZE];
 
