@@ -310,90 +310,54 @@ Traveler *get_all_travelers_in_bus(Bus bus, Traveler *travelers, int travelers_n
     return travelers_in_bus_array;
 }
 
-/* qsort int comparison function */
-int int_cmp(const void *a, const void *b)
-{
-    const int *ia = (const int *)a; // casting pointer types
+/* comparison function for qsort */
+int int_compare(const void *a, const void *b){
+
+    const int *ia = (const int *)a;
     const int *ib = (const int *)b;
     return *ia  - *ib;
-    /* integer comparison: returns negative if b > a
-    and positive if a > b */
 }
 
-// Returns number of times x occurs in arr[0..n-1]
-int countOccurrences(const int arr[], int n, int x){
+int get_the_most_popular_station(Traveler *travelers_in_bus, const int *size){
 
-    int res = 0;
-    for (int i=0; i<n; i++)
-        if (x == arr[i])
-            res++;
-    return res;
-}
+    int count, max_val = 0, index = -1, station_id_array[*size], freq[*size];
 
-int get_the_most_popular_station(Traveler *travelers_in_bus, const int *travelers_in_bus_num){
-
-    int count, station_id_array[*travelers_in_bus_num], freq[*travelers_in_bus_num];
-
-    if(*travelers_in_bus_num == 1){
-        return travelers_in_bus[0].ids2;
-    }
-
-    for(int i = 0; i < *travelers_in_bus_num; i++){
+    for(int i = 0; i < *size; i++){
         station_id_array[i] = travelers_in_bus[i].ids2;
-        /* Initialize freq array */
+        // Initialize frequency array
         freq[i] = -1;
     }
 
-    qsort(station_id_array, *travelers_in_bus_num, sizeof(int), int_cmp);
+    qsort(station_id_array, *size, sizeof(int), int_compare);
 
-    fprintf(stderr, "SORTED STATION ARRAY\n");
-    for(int i = 0; i < *travelers_in_bus_num; i++){
-        fprintf(stderr, "%d, ", station_id_array[i]);
-
-    }
-
-    for(int i=0; i < *travelers_in_bus_num; i++){
+    for(int i=0; i < *size; i++){
 
         count = 1;
-
-        for(int j=i+1; j < *travelers_in_bus_num; j++){
-            /* If duplicate element is found */
+        for(int j=i+1; j < *size; j++){
+            // If duplicate element is found
             if(station_id_array[i] == station_id_array[j]){
-
                 count++;
-                /* Make sure not to count frequency of same element again */
-                freq[j] = 0;
+                freq[j] = 0; // Make sure not to count frequency of same element again
             }
         }
-
-        /* If frequency of current element is not counted */
+        // If frequency of current element is not counted
         if(freq[i] != 0){
             freq[i] = count;
         }
     }
 
-    /*
-     * Print frequency of each element
-     */
-    fprintf(stderr,"\nFrequency of all elements of array : \n");
-    for(int i=0; i < *travelers_in_bus_num; i++)
-    {
-        if(freq[i] != 0)
-        {
-            fprintf(stderr,"%d occurs %d times\n", station_id_array[i], freq[i]);
-        }
-    }
-
-    int maxValue = 0, index = -1;
-
-    for (int i = 0; i < *travelers_in_bus_num; ++i) {
-        if ( freq[i] > maxValue ) {
-            maxValue = freq[i];
+    for (int i = 0; i < *size; ++i) {
+        if (freq[i] > max_val ) {
+            max_val = freq[i];
             index = i;
         }
     }
 
-    return station_id_array[index];
+    if(index == -1){ //Bus is empty
+        return index;
+    }else{
+        return station_id_array[index];
+    }
 }
 
 
@@ -439,7 +403,7 @@ int main(void){
 
     int my_nb_bus = 0;
     int tmp = 0;
-    int random_station = -1;
+    int dest_station = -1;
     int generate_new_station = 1;
 
     int update_sp_counter = 0;
@@ -585,13 +549,13 @@ int main(void){
 
         if(generate_new_station){
 
-            random_station = (rand()%stations_num);
+            dest_station = (rand() % stations_num);
             generate_new_station = 0;
-            fprintf(stderr, "THE BUS IS GOING TO THE ST %d\n", random_station);
+            fprintf(stderr, "THE BUS IS GOING TO THE ST %d\n", dest_station);
         }
 
         if(my_nb_bus == 0){
-            snprintf(command_buffer, BUFFER_SIZE, "BUS %d", random_station);
+            snprintf(command_buffer, BUFFER_SIZE, "BUS %d", dest_station);
             my_nb_bus++;
             generate_new_station = 0;
 
@@ -602,7 +566,7 @@ int main(void){
                 update_sp_counter++;
                 fprintf(stderr, "BUS SPEED HAVE BEEN UPDATED\n");
 
-            }else if (bus_arrived(bus_array[1], stations_array[random_station])) {
+            }else if (bus_arrived(bus_array[1], stations_array[dest_station])) {
 
                 if(tmp == 0){
 
@@ -611,14 +575,14 @@ int main(void){
 
                 }else{
 
-                    random_station = (rand() % stations_num);
-                snprintf(command_buffer, BUFFER_SIZE, "DESTINATION 1 %d", random_station);
+                    dest_station = (rand() % stations_num);
+                snprintf(command_buffer, BUFFER_SIZE, "DESTINATION 1 %d", dest_station);
 
                     tmp = 0;
                 }
 
             }else{
-                snprintf(command_buffer, BUFFER_SIZE, "DESTINATION 1 %d", random_station);
+                snprintf(command_buffer, BUFFER_SIZE, "DESTINATION 1 %d", dest_station);
                 tmp = 0;
             }
 
