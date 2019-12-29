@@ -33,6 +33,7 @@ struct Traveler{
     int ids2;
     int id_bus;
     int at_dest;
+    Traveler *next;
 };
 
 typedef struct Bus Bus;
@@ -45,6 +46,10 @@ struct Bus{
     int num_cars;
 };
 
+typedef struct TravelersList TravelersList;
+struct TravelersList{
+    Traveler *first_traveler;
+};
 
 void populate_station(int id, int x, int y, int capacity, Station *station){
 
@@ -135,6 +140,24 @@ void print_traveler(Traveler traveler){
     fprintf(stderr, "AT_DEST=%d\n", traveler.at_dest);
 
 }
+
+
+// Add a new traveler at the start of the list
+void add_traveler(TravelersList *travelers_list, Traveler *new_traveler){
+    new_traveler->next = travelers_list->first_traveler;
+    travelers_list->first_traveler = new_traveler;
+}
+
+void print_travelers_list(TravelersList *travelers_list){
+
+    Traveler *actual_traveler = travelers_list->first_traveler;
+
+    while (actual_traveler != NULL){
+        print_traveler(*actual_traveler);
+        actual_traveler = actual_traveler->next;
+    }
+}
+
 
 void print_all_travelers(Traveler *travelers_array, int travelers_num){
 
@@ -361,14 +384,15 @@ int main(void){
     scanf("%d", &player_id);
 
     Player players_array[player_num];
-
-    Traveler* travelers_array = malloc(0 * sizeof(Traveler *));
     Station stations_array[MAX_STATIONS_NUMBER];
-    
-    if(travelers_array == NULL){
-        printf("Cannot allocate initial memory for data\n");
-        exit(1);
+
+    TravelersList* travelers_list = malloc(sizeof(*travelers_list));
+    if (travelers_list == NULL){
+        fprintf(stderr, "Cannot allocate initial memory for data\n");
+        exit(EXIT_FAILURE);
     }
+
+    travelers_list->first_traveler = NULL;
 
     for(int i = 0; i < stations_num; i++){
 
@@ -442,22 +466,19 @@ int main(void){
 
         }
 
-        int new_travelers = 0, travelers_in_bus = 0, travelers_reaching_dest = 0;
-        scanf("%d", &new_travelers);
+        int new_travelers_num = 0, travelers_in_bus = 0, travelers_reaching_dest = 0;
+        scanf("%d", &new_travelers_num);
         scanf("%d", &travelers_in_bus);
         scanf("%d", &travelers_reaching_dest);
-        fprintf(stderr, "NT=%d, ", new_travelers);
+        fprintf(stderr, "NT=%d, ", new_travelers_num);
         fprintf(stderr, "TB=%d, ", travelers_in_bus);
         fprintf(stderr, "TD=%d\n", travelers_reaching_dest);
 
-        if(new_travelers > 0){
+        if(new_travelers_num > 0){
 
-            int actual_travelers_num = travelers_num;
-            travelers_num = increase_travelers_array(&travelers_array, travelers_num, new_travelers);
+            for(int i = 0; i < new_travelers_num; i ++){
 
-            //fprintf(stderr, "NEW TRAVELERS :  \n");
-
-            for(int i = actual_travelers_num; i < travelers_num; i ++){
+                Traveler *new_traveler = malloc(sizeof(*new_traveler));
 
                 int IDT = 0, IDS1 = 0, IDS2 = 0;
 
@@ -465,9 +486,8 @@ int main(void){
                 scanf("%d", &IDS1);
                 scanf("%d", &IDS2);
                 
-                populate_traveler(&travelers_array[i], IDT, IDS1, IDS2, -1, 0);
-                //print_traveler(travelers_array[i]);
-
+                populate_traveler(new_traveler, IDT, IDS1, IDS2, -1, 0);
+                add_traveler(travelers_list, new_traveler);
             }
         }
 
@@ -485,7 +505,7 @@ int main(void){
 
             }
 
-            update_travelers_in_bus(travelers_array, travelers_num, all_travelers_in_bus, travelers_in_bus);
+            //update_travelers_in_bus(travelers_array, travelers_num, all_travelers_in_bus, travelers_in_bus);
         }
 
         if(travelers_reaching_dest > 0){
@@ -500,10 +520,11 @@ int main(void){
 
             }
 
-            update_travelers_reaching_dest(travelers_array, travelers_num, all_travelers_reaching_dest, travelers_reaching_dest);
+            //update_travelers_reaching_dest(travelers_array, travelers_num, all_travelers_reaching_dest, travelers_reaching_dest);
         }
 
         print_all_stations(stations_array, stations_num);
+        print_travelers_list(travelers_list);
 
         printf("PASS\n");
 
