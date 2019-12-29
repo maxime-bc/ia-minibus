@@ -32,7 +32,6 @@ struct Traveler{
     int ids1;
     int ids2;
     int id_bus;
-    int at_dest;
     Traveler *next;
 };
 
@@ -82,13 +81,12 @@ void populate_bus(int id, int owner_player_id, int x, int y, int station_id, int
 
 }
 
-void populate_traveler(Traveler *traveler, int id, int ids1, int ids2, int id_bus, int at_dest){
+void populate_traveler(Traveler *traveler, int id, int ids1, int ids2, int id_bus){
 
     traveler->id = id;
     traveler->ids1 = ids1;
     traveler->ids2 = ids2;
     traveler->id_bus = id_bus;
-    traveler->at_dest = at_dest;
 
 }
 
@@ -144,12 +142,17 @@ void print_traveler(Traveler traveler){
     fprintf(stderr, "IDT=%d, ", traveler.id);
     fprintf(stderr, "IDS1=%d, ", traveler.ids1);
     fprintf(stderr, "IDS2=%d, ", traveler.ids2);
-    fprintf(stderr, "ID_BUS=%d, ", traveler.id_bus);
-    fprintf(stderr, "AT_DEST=%d\n", traveler.at_dest);
+    fprintf(stderr, "ID_BUS=%d\n", traveler.id_bus);
 
 }
 
-// Add a new traveler at the start of the list
+void check_malloc(void *pointer){
+    if (pointer == NULL){
+        fprintf(stderr, "Cannot allocate initial memory for data\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
 void add_traveler(TravelersList *travelers_list, Traveler *new_traveler){
     new_traveler->next = travelers_list->first_traveler;
     travelers_list->first_traveler = new_traveler;
@@ -166,48 +169,52 @@ void print_travelers_list(TravelersList *travelers_list){
     }
 }
 
-void update_travelers_in_bus(Traveler *travelers_array, int travelers_num, int travelers_in_bus[][IN_BUS_ARRAY_SIZE], int in_bus_number){
+void delete_travelers_at_dest(TravelersList *travelers_list, int id_traveler){
 
-    for(int i = 0; i < travelers_num; i++){
+    Traveler *previous_traveler,*actual_traveler;
+    actual_traveler=travelers_list->first_traveler;
+    previous_traveler = actual_traveler;
 
-        for(int j = 0; j < in_bus_number; j++){
+    while(actual_traveler != NULL){
 
-            Traveler *traveler = &travelers_array[i];
+        if(actual_traveler->id == id_traveler){
 
-            if(!traveler->at_dest){
+            if(previous_traveler == actual_traveler){
 
-                if(traveler->id == travelers_in_bus[j][0]){
-                    traveler->id_bus = travelers_in_bus[j][1];
-                    //fprintf(stderr, "UPDATED %d IS NOW IN %d\n", traveler.id, traveler.id_bus);
-                }
+                travelers_list->first_traveler = actual_traveler->next;
+                free(actual_traveler);
+
+            }else{
+
+                previous_traveler->next=actual_traveler->next;
+                free(actual_traveler);
             }
+            break;
         }
-    }  
+
+        previous_traveler = actual_traveler;
+        actual_traveler = actual_traveler->next;
+    }
 }
 
-void update_travelers_reaching_dest(Traveler *travelers_array, int travelers_num, const int travelers_reaching_dest[], int reaching_dest){
+void update_travelers_in_bus(TravelersList *travelers_list, int id_traveler, int id_bus){
 
-    for(int i = 0; i < travelers_num; i++){
+    Traveler *actual_traveler = travelers_list->first_traveler;
 
-        for(int j = 0; j < reaching_dest; j++){
+    while (actual_traveler != NULL){
 
-            Traveler *traveler = &travelers_array[i];
-
-            if(!traveler->at_dest){
-
-                if(traveler->id == travelers_reaching_dest[j]){
-                    traveler->at_dest = 1;
-                    traveler->id_bus = -1;
-                    //fprintf(stderr, "UPDATED %d IS AT DEST : %d\n", traveler.id, traveler.at_dest);
-                }
-            }
+        if(actual_traveler->id == id_traveler){
+            actual_traveler->id_bus = id_bus;
         }
+
+        actual_traveler = actual_traveler->next;
     }
 }
 
 Traveler *sort_travelers_by_station(Traveler *travelers_array, int travelers_num, int station_id, int *travelers_in_station) {
 
     Traveler* station_travelers_array = malloc(0 * sizeof(Traveler *));
+    check_malloc(station_travelers_array);
 
     for (int i = 0; i < travelers_num; i++) {
 
@@ -217,8 +224,7 @@ Traveler *sort_travelers_by_station(Traveler *travelers_array, int travelers_num
                     travelers_array[i].id,
                     travelers_array[i].ids1,
                     travelers_array[i].ids2,
-                    travelers_array[i].id_bus,
-                    travelers_array[i].at_dest);
+                    travelers_array[i].id_bus);
             *travelers_in_station = *travelers_in_station+1;
         }
     }
@@ -291,6 +297,7 @@ Traveler *get_all_travelers_in_bus(Bus bus, Traveler *travelers, int travelers_n
 
     *travelers_in_bus_num = 0;
     Traveler* travelers_in_bus_array = malloc(0 * sizeof(Traveler *));
+    check_malloc(travelers_in_bus_array);
 
     for(int i = 0; i < travelers_num; i++){
 
@@ -358,13 +365,10 @@ int get_the_most_popular_station(Traveler *travelers_in_bus, const int *size){
 
 int main(void){
 
-    int player_num = 0, travelers_list_size = 0, stations_num = START_STATIONS_NUMBER;
-    int player_id = 0;
-    int round = 0;
+    int player_num, travelers_list_size, stations_num = START_STATIONS_NUMBER, player_id, round = 0;
 
     srand(time(NULL));
 
-    // get number of players and our player id
     scanf("%d", &player_num);
     scanf("%d", &player_id);
 
@@ -372,16 +376,13 @@ int main(void){
     Station stations_array[MAX_STATIONS_NUMBER];
 
     TravelersList* travelers_list = malloc(sizeof(*travelers_list));
-    if (travelers_list == NULL){
-        fprintf(stderr, "Cannot allocate initial memory for data\n");
-        exit(EXIT_FAILURE);
-    }
+    check_malloc(travelers_list);
 
     travelers_list->first_traveler = NULL;
 
     for(int i = 0; i < stations_num; i++){
 
-        int id = 0, x = 0, y = 0, capacity = 0;
+        int id, x, y, capacity;
 
         scanf("%d", &id);
         scanf("%d", &x);
@@ -396,7 +397,7 @@ int main(void){
 
         for(int i = 0; i < player_num; i++){
 
-            int id = 0, money = 0, SB_upgrades = 0, SP_upgrades = 0, CT_upgrades = 0, end = 0;
+            int id, money, SB_upgrades, SP_upgrades, CT_upgrades, end;
 
             scanf("%d", &id);
             scanf("%d", &money);
@@ -410,12 +411,12 @@ int main(void){
 
         }
 
-        int new_station = 0;
+        int new_station;
         scanf("%d", &new_station);
 
         if(new_station){
 
-            int id = 0, x = 0, y = 0, capacity = 0;
+            int id, x, y, capacity;
 
             scanf("%d", &id);
             scanf("%d", &x);
@@ -427,14 +428,14 @@ int main(void){
 
         }
 
-        int bus_num = 0;
+        int bus_num;
         scanf("%d", &bus_num);
 
         Bus bus_array[bus_num];
 
         for(int i = 0; i < bus_num; i++){
 
-            int id = 0, owner_player_id = 0, x = 0, y = 0, station_id = 0, num_cars = 0;
+            int id, owner_player_id, x, y, station_id, num_cars;
 
             scanf("%d", &id);
             scanf("%d", &owner_player_id);
@@ -447,7 +448,7 @@ int main(void){
 
         }
 
-        int new_travelers_num = 0, travelers_in_bus = 0, travelers_at_dest = 0;
+        int new_travelers_num, travelers_in_bus, travelers_at_dest;
         scanf("%d", &new_travelers_num);
         scanf("%d", &travelers_in_bus);
         scanf("%d", &travelers_at_dest);
@@ -457,14 +458,15 @@ int main(void){
             for(int i = 0; i < new_travelers_num; i ++){
 
                 Traveler *new_traveler = malloc(sizeof(*new_traveler));
+                check_malloc(new_traveler);
 
-                int IDT = 0, IDS1 = 0, IDS2 = 0;
+                int IDT, IDS1, IDS2;
 
                 scanf("%d", &IDT);
                 scanf("%d", &IDS1);
                 scanf("%d", &IDS2);
                 
-                populate_traveler(new_traveler, IDT, IDS1, IDS2, -1, 0);
+                populate_traveler(new_traveler, IDT, IDS1, IDS2, -1);
                 add_traveler(travelers_list, new_traveler);
                 travelers_list_size++;
             }
@@ -472,34 +474,26 @@ int main(void){
 
         if(travelers_in_bus > 0){
 
-            int all_travelers_in_bus[travelers_in_bus][IN_BUS_ARRAY_SIZE];
-            
             for (int i = 0; i < travelers_in_bus; i++){
 
-                int IDT = 0, IDB = 0;
+                int IDT, IDB;
                 scanf("%d", &IDT);
                 scanf("%d", &IDB);
-                all_travelers_in_bus[i][0] = IDT;
-                all_travelers_in_bus[i][1] = IDB;
+
+                update_travelers_in_bus(travelers_list, IDT, IDB);
+                fprintf(stderr, "TRAVELER %d IS NOW IN THE BUS %d\n", IDT, IDB);
 
             }
-
-            //update_travelers_in_bus(travelers_array, travelers_num, all_travelers_in_bus, travelers_in_bus);
         }
 
         if(travelers_at_dest > 0){
 
-            int all_travelers_reaching_dest[travelers_at_dest];
-
             for(int i = 0; i < travelers_at_dest; i++){
-
-                int IDT = 0;
+                int IDT;
                 scanf("%d", &IDT);
-                all_travelers_reaching_dest[i] = IDT;
-
+                delete_travelers_at_dest(travelers_list, IDT);
+                fprintf(stderr, "TRAVELER %d DELETED FROM LIST\n", IDT);
             }
-
-            //update_travelers_reaching_dest(travelers_array, travelers_num, all_travelers_reaching_dest, travelers_at_dest);
         }
 
         print_all_bus(bus_array, bus_num);
