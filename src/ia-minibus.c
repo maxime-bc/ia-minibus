@@ -3,7 +3,8 @@
 #include <time.h>
 #include <string.h>
 
-#define BUFFER_SIZE 256
+#define MAX_STATIONS_NUMBER 10
+#define START_STATIONS_NUMBER 3
 
 const int IN_BUS_ARRAY_SIZE = 2;
 
@@ -43,6 +44,7 @@ struct Bus{
     int station_id;
     int num_cars;
 };
+
 
 void populate_station(int id, int x, int y, int capacity, Station *station){
 
@@ -145,21 +147,6 @@ int increase_travelers_array(Traveler **travelers_array, int current_size, int n
     
     const int total_size = current_size + num_new_elems;
     Traveler *temp = realloc(*travelers_array, (total_size * sizeof(Traveler)));
-
-    if (temp == NULL){
-        printf("Cannot allocate more memory.\n");
-        return 0;
-    }else{
-        *travelers_array = temp;
-    }
-
-    return total_size;
-}
-
-int increase_stations_array(Station **travelers_array, int current_size, int num_new_elems){
-    
-    const int total_size = current_size + num_new_elems;
-    Station *temp = realloc(*travelers_array, (total_size * sizeof(Station)));
 
     if (temp == NULL){
         printf("Cannot allocate more memory.\n");
@@ -363,7 +350,7 @@ int get_the_most_popular_station(Traveler *travelers_in_bus, const int *size){
 
 int main(void){
 
-    int player_num = 0;
+    int player_num = 0, travelers_num = 0, stations_num = START_STATIONS_NUMBER;
     int player_id = 0;
     int round = 0;
 
@@ -372,21 +359,16 @@ int main(void){
     // get number of players and our player id
     scanf("%d", &player_num);
     scanf("%d", &player_id);
-    //fprintf(stderr, "NBP=%d, ", player_num);
-    //fprintf(stderr, "IDP=%d\n", player_id);
 
     Player players_array[player_num];
 
-    int travelers_num = 0, stations_num = 0;
     Traveler* travelers_array = malloc(0 * sizeof(Traveler *));
-    Station* stations_array = malloc(0 * sizeof(Station *));
+    Station stations_array[MAX_STATIONS_NUMBER];
     
-    if(travelers_array == NULL || stations_array == NULL){
+    if(travelers_array == NULL){
         printf("Cannot allocate initial memory for data\n");
         exit(1);
     }
-
-    stations_num = increase_stations_array(&stations_array, stations_num, 3);
 
     for(int i = 0; i < stations_num; i++){
 
@@ -400,13 +382,6 @@ int main(void){
         populate_station(id, x, y, capacity, &stations_array[i]);
 
     }
-
-    int my_nb_bus = 0;
-    int tmp = 0;
-    int dest_station = -1;
-    int generate_new_station = 1;
-
-    int update_sp_counter = 0;
 
     while(1){
 
@@ -432,9 +407,6 @@ int main(void){
 
         if(station_added){
 
-            int actual_stations_num = stations_num;
-            stations_num = increase_stations_array(&stations_array, stations_num, 1);
-
             int id = 0, x = 0, y = 0, capacity = 0;
 
             scanf("%d", &id);
@@ -442,7 +414,8 @@ int main(void){
             scanf("%d", &y);
             scanf("%d", &capacity);
 
-            populate_station(id, x, y, capacity, &stations_array[actual_stations_num]);
+            populate_station(id, x, y, capacity, &stations_array[stations_num]);
+            stations_num++;
             //print_all_stations(stations_array, stations_num);
             
         }
@@ -530,117 +503,9 @@ int main(void){
             update_travelers_reaching_dest(travelers_array, travelers_num, all_travelers_reaching_dest, travelers_reaching_dest);
         }
 
-        // ----- IA starts here -----
+        print_all_stations(stations_array, stations_num);
 
-        print_all_travelers(travelers_array, travelers_num);
-
-        int travelers_in_bus_num = 0;
-        Traveler *travelers_in_bus_array = get_all_travelers_in_bus(bus_array[1], travelers_array, travelers_num, &travelers_in_bus_num);
-        int most_popular_station_id = get_the_most_popular_station(travelers_in_bus_array, &travelers_in_bus_num);
-
-        if(most_popular_station_id != -1){
-            fprintf(stderr, "MOST TRAVELERS WANTS TO GO TO THE STATION %d.\n", most_popular_station_id);
-        }
-
-        fprintf(stderr, "IN MY BUS, %d TRAVELERS\n", travelers_in_bus_num);
-        print_all_travelers(travelers_in_bus_array, travelers_in_bus_num);
-
-        char command_buffer[BUFFER_SIZE];
-
-        if(generate_new_station){
-
-            dest_station = (rand() % stations_num);
-            generate_new_station = 0;
-            fprintf(stderr, "THE BUS IS GOING TO THE ST %d\n", dest_station);
-        }
-
-        if(my_nb_bus == 0){
-            snprintf(command_buffer, BUFFER_SIZE, "BUS %d", dest_station);
-            my_nb_bus++;
-            generate_new_station = 0;
-
-        } else {
-
-            if(players_array[player_id].money >= 200 && update_sp_counter < 2){
-                snprintf(command_buffer, BUFFER_SIZE, "UPDATESP");
-                update_sp_counter++;
-                fprintf(stderr, "BUS SPEED HAVE BEEN UPDATED\n");
-
-            }else if (bus_arrived(bus_array[1], stations_array[dest_station])) {
-
-                if(tmp == 0){
-
-                    snprintf(command_buffer, BUFFER_SIZE, "PASS");
-                    tmp++;
-
-                }else{
-
-                    dest_station = (rand() % stations_num);
-                snprintf(command_buffer, BUFFER_SIZE, "DESTINATION 1 %d", dest_station);
-
-                    tmp = 0;
-                }
-
-            }else{
-                snprintf(command_buffer, BUFFER_SIZE, "DESTINATION 1 %d", dest_station);
-                tmp = 0;
-            }
-
-        }
-
-        fprintf(stderr, "COMMAND : %s\n", command_buffer);
-        printf("%s\n", command_buffer);
-
-        // //IA//
-
-        // fprintf(stderr, "PLAYER ID=%d\n", player_id);
-        // fprintf(stderr, "PLAYER MONEY=%d\n", players_array[player_id].money);
-
-        // if(bus_nb == 0 && players_array[player_id].money >= 100){
-        //     printf("BUS 2\n");
-        // }else{
-
-        //     if(new_travelers != 0){
-
-        //         if(bus_nb == 1){
-
-        //             int distance = 0;
-        //             int bus_dest_station = 0;
-
-        //             for(int i = 0; i < new_travelers; i++){
-
-        //                 int start_station_id = all_new_travellers[i][1];
-        //                 int start_st_x = 0, start_st_y = 0;
-
-        //                 //Get the departure station
-        //                 for(int i = 0; i < stations_num; i++){
-        //                     if(stations_array[i].id == start_station_id){
-        //                         start_st_x = stations_array[i].x;
-        //                         start_st_y = stations_array[i].y;
-        //                     }
-        //                 }
-        //                 fprintf(stderr, "TRAVELER ST DP=%d\n", start_station_id);
-
-        //                 //Determine which one is the closest to the actual bus
-        //                 int new_distance = (start_st_x + bus_array[1].x)*(start_st_x + bus_array[1].x) + (start_st_y + bus_array[1].y)*(start_st_y + bus_array[1].y);
-
-        //                 if(new_distance < distance){
-        //                     distance = new_distance;
-        //                     bus_dest_station = start_station_id;
-        //                     fprintf(stderr, "CLOSEST T=%d\n", all_new_travellers[i][1]);
-        //                 }
-                    
-        //             }
-
-        //             printf("DESTINATION 0 %d\n", bus_dest_station);
-
-        //         }
-        //     }else{
-        //         printf("PASS\n");
-        //     }
-        // }
-
-        // //IA//
+        printf("PASS\n");
 
         round++;
 
