@@ -6,14 +6,13 @@
 #define MAX_STATIONS_NUMBER 10
 #define START_STATIONS_NUMBER 3
 
-const int IN_BUS_ARRAY_SIZE = 2;
-
 typedef struct Station Station;
 struct Station{
     int id;
     int x;
     int y;
     int capacity;
+    int travelers_nb;
 };
 
 typedef struct Player Player;
@@ -50,12 +49,13 @@ struct TravelersList{
     Traveler *first_traveler;
 };
 
-void populate_station(int id, int x, int y, int capacity, Station *station){
+void populate_station(int id, int x, int y, int capacity, int travelers_nb, Station *station){
 
     station->id = id;
     station->x = x;
     station->y = y;
     station->capacity = capacity;
+    station->travelers_nb = travelers_nb;
 
 }
 
@@ -96,6 +96,7 @@ void print_station(Station station){
     fprintf(stderr, "X=%d, ", station.x);
     fprintf(stderr, "Y=%d, ", station.y);
     fprintf(stderr, "K=%d\n", station.capacity);
+    fprintf(stderr, "NBT=%d\n", station.travelers_nb);
 
 }
 
@@ -197,7 +198,7 @@ void delete_travelers_at_dest(TravelersList *travelers_list, int id_traveler){
     }
 }
 
-void update_travelers_in_bus(TravelersList *travelers_list, int id_traveler, int id_bus){
+void update_travelers_in_bus(TravelersList *travelers_list, Station stations_array[], int id_traveler, int id_bus){
 
     Traveler *actual_traveler = travelers_list->first_traveler;
 
@@ -205,6 +206,7 @@ void update_travelers_in_bus(TravelersList *travelers_list, int id_traveler, int
 
         if(actual_traveler->id == id_traveler){
             actual_traveler->id_bus = id_bus;
+            stations_array[actual_traveler->ids1].travelers_nb--;
         }
 
         actual_traveler = actual_traveler->next;
@@ -232,39 +234,6 @@ Traveler *sort_travelers_by_station(Traveler *travelers_array, int travelers_num
     return station_travelers_array;
 }
 
-int get_station_with_most_travelers(Traveler *travelers_array, int travelers_num, int stations_num) {
-
-    int max = 0;
-    int station = -1;
-    int travelers_num_per_station[stations_num];
-
-    for (int i = 0; i < stations_num; i++) {
-
-        int travelers_in_station = 0;
-        Traveler *all_travelers_in_station = sort_travelers_by_station(travelers_array, travelers_num, i,
-                                                                       &travelers_in_station);
-
-        travelers_num_per_station[i] = travelers_in_station;
-
-        if(travelers_in_station > 0) {
-            fprintf(stderr, "In ST %d : \n", i);
-            //print_all_travelers(all_travelers_in_station, travelers_in_station);
-        }
-
-    }
-
-    for (int i = 0; i < stations_num; i++){
-        if (travelers_num_per_station[i] > max){
-            max = travelers_num_per_station[i];
-            station = i;
-        }
-    }
-
-    fprintf(stderr, "Max : %d travelers in ST %d\n", max, station);
-
-    return station;
-}
-
 // get bus with bus_array[bus_id] and station with stations_array[station_id]
 int bus_arrived(Bus bus, Station station){
 
@@ -276,11 +245,11 @@ int bus_arrived(Bus bus, Station station){
 }
 
 /*
-int is_bus_full(Bus bus, Traveler* travelers, int travelers_num){
+int is_bus_full(Bus bus, Traveler* travelers, int travelers_nb){
 
     int travelers_in_bus_number = 0;
 
-    for(int i = 0; i < travelers_num; i++){
+    for(int i = 0; i < travelers_nb; i++){
 
         if(travelers[i].id_bus == bus.id){
             travelers_in_bus_number++;
@@ -318,6 +287,52 @@ int int_compare(const void *a, const void *b){
     const int *ia = (const int *)a;
     const int *ib = (const int *)b;
     return *ia  - *ib;
+}
+
+void get_the_most_crowded_station(TravelersList *travelers_list, const int travelers_list_size){
+
+    int count, max_val = 0, index = -1, travelers_ids1[travelers_list_size], freq[travelers_list_size];
+
+    Traveler *actual_traveler = travelers_list->first_traveler;
+
+    int counter = 0;
+    while (actual_traveler != NULL){
+
+        travelers_ids1[counter] = actual_traveler->ids1;
+        actual_traveler = actual_traveler->next;
+        counter++;
+        freq[counter] = -1;
+    }
+
+    //qsort(travelers_ids1, travelers_list_size, sizeof(int), int_compare);
+
+    for(int i = 0; i < counter; i++){
+        fprintf(stderr, "AT %d, VALUE %d\n", i, travelers_ids1[i]);
+    }
+
+    /*
+    for(int i=0; i < travelers_list_size; i++){
+
+        count = 1;
+        for(int j=i+1; j < travelers_list_size; j++){
+            // If duplicate element is found
+            if(travelers_ids1[i] == travelers_ids1[j]){
+                count++;
+                freq[j] = 0; // Make sure not to count frequency of same element again
+            }
+        }
+        // If frequency of current element is not counted
+        if(freq[i] != 0){
+            freq[i] = count;
+        }
+    }
+
+    for (int i = 0; i < travelers_list_size; ++i) {
+        if (freq[i] > max_val ) {
+            max_val = freq[i];
+            index = i;
+        }
+    }*/
 }
 
 int get_the_most_popular_station(Traveler *travelers_in_bus, const int *size){
@@ -362,10 +377,14 @@ int get_the_most_popular_station(Traveler *travelers_in_bus, const int *size){
     }
 }
 
+void update_station_travelers_number(Station stations_array[], int station_id){
+    stations_array[station_id].travelers_nb++;
+}
+
 
 int main(void){
 
-    int player_num, travelers_list_size, stations_num = START_STATIONS_NUMBER, player_id, round = 0;
+    int player_num, travelers_list_size = 0, stations_num = START_STATIONS_NUMBER, player_id, round = 0;
 
     srand(time(NULL));
 
@@ -389,7 +408,7 @@ int main(void){
         scanf("%d", &y);
         scanf("%d", &capacity);
 
-        populate_station(id, x, y, capacity, &stations_array[i]);
+        populate_station(id, x, y, capacity, 0, &stations_array[i]);
 
     }
 
@@ -407,8 +426,6 @@ int main(void){
             scanf("%d", &end);
 
             populate_player(id, money, SB_upgrades, SP_upgrades, CT_upgrades, end, &players_array[i]);
-            //print_player(players_array[i]);
-
         }
 
         int new_station;
@@ -423,7 +440,7 @@ int main(void){
             scanf("%d", &y);
             scanf("%d", &capacity);
 
-            populate_station(id, x, y, capacity, &stations_array[stations_num]);
+            populate_station(id, x, y, capacity, 0, &stations_array[stations_num]);
             stations_num++;
 
         }
@@ -448,10 +465,10 @@ int main(void){
 
         }
 
-        int new_travelers_num, travelers_in_bus, travelers_at_dest;
+        int new_travelers_num, travelers_in_bus_num, travelers_at_dest_num;
         scanf("%d", &new_travelers_num);
-        scanf("%d", &travelers_in_bus);
-        scanf("%d", &travelers_at_dest);
+        scanf("%d", &travelers_in_bus_num);
+        scanf("%d", &travelers_at_dest_num);
 
         if(new_travelers_num > 0){
 
@@ -467,28 +484,29 @@ int main(void){
                 scanf("%d", &IDS2);
                 
                 populate_traveler(new_traveler, IDT, IDS1, IDS2, -1);
+                stations_array[IDS1].travelers_nb++; //Update station1 travelers number
                 add_traveler(travelers_list, new_traveler);
                 travelers_list_size++;
             }
         }
 
-        if(travelers_in_bus > 0){
+        if(travelers_in_bus_num > 0){
 
-            for (int i = 0; i < travelers_in_bus; i++){
+            for (int i = 0; i < travelers_in_bus_num; i++){
 
                 int IDT, IDB;
                 scanf("%d", &IDT);
                 scanf("%d", &IDB);
 
-                update_travelers_in_bus(travelers_list, IDT, IDB);
+                update_travelers_in_bus(travelers_list, stations_array, IDT, IDB);
                 fprintf(stderr, "TRAVELER %d IS NOW IN THE BUS %d\n", IDT, IDB);
 
             }
         }
 
-        if(travelers_at_dest > 0){
+        if(travelers_at_dest_num > 0){
 
-            for(int i = 0; i < travelers_at_dest; i++){
+            for(int i = 0; i < travelers_at_dest_num; i++){
                 int IDT;
                 scanf("%d", &IDT);
                 delete_travelers_at_dest(travelers_list, IDT);
@@ -501,12 +519,13 @@ int main(void){
         print_travelers_list(travelers_list);
         fprintf(stderr, "LIST SIZE : %d\n", travelers_list_size);
 
+        get_the_most_crowded_station(travelers_list, travelers_list_size);
+
         printf("PASS\n");
 
         round++;
 
         fflush(stdout);
-
     }
 }
 
