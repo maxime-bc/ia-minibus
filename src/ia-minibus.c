@@ -131,6 +131,14 @@ void print_bus(Bus bus){
 
 }
 
+void print_all_bus(Bus bus[], int bus_num){
+
+    fprintf(stderr, "ALL BUS : \n");
+    for(int i = 0; i < bus_num; i++){
+        print_bus(bus[i]);
+    }
+}
+
 void print_traveler(Traveler traveler){
 
     fprintf(stderr, "IDT=%d, ", traveler.id);
@@ -141,7 +149,6 @@ void print_traveler(Traveler traveler){
 
 }
 
-
 // Add a new traveler at the start of the list
 void add_traveler(TravelersList *travelers_list, Traveler *new_traveler){
     new_traveler->next = travelers_list->first_traveler;
@@ -150,35 +157,13 @@ void add_traveler(TravelersList *travelers_list, Traveler *new_traveler){
 
 void print_travelers_list(TravelersList *travelers_list){
 
+    fprintf(stderr, "ALL TRAVELERS : \n");
     Traveler *actual_traveler = travelers_list->first_traveler;
 
     while (actual_traveler != NULL){
         print_traveler(*actual_traveler);
         actual_traveler = actual_traveler->next;
     }
-}
-
-
-void print_all_travelers(Traveler *travelers_array, int travelers_num){
-
-    for(int i = 0; i < travelers_num; i++){
-        print_traveler(travelers_array[i]);
-    }
-}
-
-int increase_travelers_array(Traveler **travelers_array, int current_size, int num_new_elems){
-    
-    const int total_size = current_size + num_new_elems;
-    Traveler *temp = realloc(*travelers_array, (total_size * sizeof(Traveler)));
-
-    if (temp == NULL){
-        printf("Cannot allocate more memory.\n");
-        return 0;
-    }else{
-        *travelers_array = temp;
-    }
-
-    return total_size;
 }
 
 void update_travelers_in_bus(Traveler *travelers_array, int travelers_num, int travelers_in_bus[][IN_BUS_ARRAY_SIZE], int in_bus_number){
@@ -227,7 +212,7 @@ Traveler *sort_travelers_by_station(Traveler *travelers_array, int travelers_num
     for (int i = 0; i < travelers_num; i++) {
 
         if (station_id == travelers_array[i].ids1 && travelers_array[i].id_bus == -1) {
-            increase_travelers_array(&station_travelers_array, *travelers_in_station, 1);
+            //increase_travelers_array(&station_travelers_array, *travelers_in_station, 1);
             populate_traveler(&station_travelers_array[*travelers_in_station],
                     travelers_array[i].id,
                     travelers_array[i].ids1,
@@ -257,7 +242,7 @@ int get_station_with_most_travelers(Traveler *travelers_array, int travelers_num
 
         if(travelers_in_station > 0) {
             fprintf(stderr, "In ST %d : \n", i);
-            print_all_travelers(all_travelers_in_station, travelers_in_station);
+            //print_all_travelers(all_travelers_in_station, travelers_in_station);
         }
 
     }
@@ -311,7 +296,7 @@ Traveler *get_all_travelers_in_bus(Bus bus, Traveler *travelers, int travelers_n
 
         if(travelers[i].id_bus == bus.id){
 
-            increase_travelers_array(&travelers_in_bus_array, *travelers_in_bus_num, 1);
+            //increase_travelers_array(&travelers_in_bus_array, *travelers_in_bus_num, 1);
             travelers_in_bus_array[*travelers_in_bus_num] = travelers[i];
             *travelers_in_bus_num = *travelers_in_bus_num + 1;
         }
@@ -373,7 +358,7 @@ int get_the_most_popular_station(Traveler *travelers_in_bus, const int *size){
 
 int main(void){
 
-    int player_num = 0, travelers_num = 0, stations_num = START_STATIONS_NUMBER;
+    int player_num = 0, travelers_list_size = 0, stations_num = START_STATIONS_NUMBER;
     int player_id = 0;
     int round = 0;
 
@@ -425,11 +410,10 @@ int main(void){
 
         }
 
-        int station_added = 0;
-        scanf("%d", &station_added);
-        fprintf(stderr, "NEWST=%d\n", station_added);
+        int new_station = 0;
+        scanf("%d", &new_station);
 
-        if(station_added){
+        if(new_station){
 
             int id = 0, x = 0, y = 0, capacity = 0;
 
@@ -440,17 +424,15 @@ int main(void){
 
             populate_station(id, x, y, capacity, &stations_array[stations_num]);
             stations_num++;
-            //print_all_stations(stations_array, stations_num);
-            
+
         }
 
-        int bus_nb = 0;
-        scanf("%d", &bus_nb);
-        fprintf(stderr, "NBBUS=%d\n", bus_nb);
+        int bus_num = 0;
+        scanf("%d", &bus_num);
 
-        Bus bus_array[bus_nb];
+        Bus bus_array[bus_num];
 
-        for(int i = 0; i < bus_nb; i++){
+        for(int i = 0; i < bus_num; i++){
 
             int id = 0, owner_player_id = 0, x = 0, y = 0, station_id = 0, num_cars = 0;
 
@@ -462,17 +444,13 @@ int main(void){
             scanf("%d", &num_cars);
 
             populate_bus(id, owner_player_id, x, y, station_id, num_cars, &bus_array[i]);
-            print_bus(bus_array[i]);
 
         }
 
-        int new_travelers_num = 0, travelers_in_bus = 0, travelers_reaching_dest = 0;
+        int new_travelers_num = 0, travelers_in_bus = 0, travelers_at_dest = 0;
         scanf("%d", &new_travelers_num);
         scanf("%d", &travelers_in_bus);
-        scanf("%d", &travelers_reaching_dest);
-        fprintf(stderr, "NT=%d, ", new_travelers_num);
-        fprintf(stderr, "TB=%d, ", travelers_in_bus);
-        fprintf(stderr, "TD=%d\n", travelers_reaching_dest);
+        scanf("%d", &travelers_at_dest);
 
         if(new_travelers_num > 0){
 
@@ -488,6 +466,7 @@ int main(void){
                 
                 populate_traveler(new_traveler, IDT, IDS1, IDS2, -1, 0);
                 add_traveler(travelers_list, new_traveler);
+                travelers_list_size++;
             }
         }
 
@@ -508,11 +487,11 @@ int main(void){
             //update_travelers_in_bus(travelers_array, travelers_num, all_travelers_in_bus, travelers_in_bus);
         }
 
-        if(travelers_reaching_dest > 0){
+        if(travelers_at_dest > 0){
 
-            int all_travelers_reaching_dest[travelers_reaching_dest];
+            int all_travelers_reaching_dest[travelers_at_dest];
 
-            for(int i = 0; i < travelers_reaching_dest; i++){
+            for(int i = 0; i < travelers_at_dest; i++){
 
                 int IDT = 0;
                 scanf("%d", &IDT);
@@ -520,11 +499,13 @@ int main(void){
 
             }
 
-            //update_travelers_reaching_dest(travelers_array, travelers_num, all_travelers_reaching_dest, travelers_reaching_dest);
+            //update_travelers_reaching_dest(travelers_array, travelers_num, all_travelers_reaching_dest, travelers_at_dest);
         }
 
+        print_all_bus(bus_array, bus_num);
         print_all_stations(stations_array, stations_num);
         print_travelers_list(travelers_list);
+        fprintf(stderr, "LIST SIZE : %d\n", travelers_list_size);
 
         printf("PASS\n");
 
