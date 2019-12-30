@@ -52,46 +52,6 @@ struct TravelersList{
     Traveler *first_traveler;
 };
 
-void populate_station(int id, int x, int y, int capacity, int travelers_nb, Station *station){
-
-    station->id = id;
-    station->x = x;
-    station->y = y;
-    station->capacity = capacity;
-    station->travelers_nb = travelers_nb;
-
-}
-
-void populate_player(int id, int money, int SB_upgrades, int SP_upgrades, int CT_upgrades, int end, Player *player){
-
-    player->id = id;
-    player->money = money;
-    player->SB_upgrades = SB_upgrades;
-    player->SP_upgrades = SP_upgrades;
-    player->CT_upgrades = CT_upgrades;
-    player->end = end;
-
-}
-
-void populate_bus(int id, int owner_player_id, int x, int y, int station_id, int num_cars, int availability, Bus *bus){
-
-    bus->id = id;
-    bus->owner_player_id = owner_player_id;
-    bus->x = x;
-    bus->y = y;
-    bus->station_id = station_id;
-    bus->num_cars = num_cars;
-    bus->availability = availability;
-}
-
-void populate_traveler(Traveler *traveler, int id, int ids1, int ids2, int id_bus){
-
-    traveler->id = id;
-    traveler->ids1 = ids1;
-    traveler->ids2 = ids2;
-    traveler->id_bus = id_bus;
-}
-
 void print_station(Station station){
 
     fprintf(stderr, "IDST=%d, ", station.id);
@@ -228,18 +188,13 @@ int bus_arrived(Bus bus, Station station){
 
 /*
 int is_bus_full(Bus bus, Traveler* travelers, int travelers_nb){
-
     int travelers_in_bus_number = 0;
-
     for(int i = 0; i < travelers_nb; i++){
-
         if(travelers[i].id_bus == bus.id){
             travelers_in_bus_number++;
         }
     }
-
     if(travelers_in_bus_number == )
-
 }
  */
 
@@ -338,32 +293,25 @@ int main(void){
     travelers_list->first_traveler = NULL;
 
     for(int i = 0; i < stations_num; i++){
-
-        int id, x, y, capacity;
-
-        scanf("%d", &id);
-        scanf("%d", &x);
-        scanf("%d", &y);
-        scanf("%d", &capacity);
-
-        populate_station(id, x, y, capacity, 0, &stations_array[i]);
-
+        scanf("%d%d%d%d",
+                &stations_array[i].id,
+                &stations_array[i].x,
+                &stations_array[i].y,
+                &stations_array[i].capacity);
+        stations_array[i].travelers_nb = 0;
     }
 
     while(1){
 
         for(int i = 0; i < players_num; i++){
 
-            int id, money, SB_upgrades, SP_upgrades, CT_upgrades, end;
-
-            scanf("%d", &id);
-            scanf("%d", &money);
-            scanf("%d", &SB_upgrades);
-            scanf("%d", &SP_upgrades);
-            scanf("%d", &CT_upgrades);
-            scanf("%d", &end);
-
-            populate_player(id, money, SB_upgrades, SP_upgrades, CT_upgrades, end, &players_array[i]);
+            scanf("%d%d%d%d%d%d",
+                    &players_array[i].id,
+                    &players_array[i].money,
+                    &players_array[i].SB_upgrades,
+                    &players_array[i].SP_upgrades,
+                    &players_array[i].CT_upgrades,
+                    &players_array[i].end);
         }
 
         int new_station;
@@ -371,16 +319,14 @@ int main(void){
 
         if(new_station){
 
-            int id, x, y, capacity;
+            scanf("%d%d%d%d",
+                    &stations_array[stations_num].id,
+                    &stations_array[stations_num].x,
+                    &stations_array[stations_num].y,
+                    &stations_array[stations_num].capacity);
+            stations_array[stations_num].travelers_nb = 0;
 
-            scanf("%d", &id);
-            scanf("%d", &x);
-            scanf("%d", &y);
-            scanf("%d", &capacity);
-
-            populate_station(id, x, y, capacity, 0, &stations_array[stations_num]);
             stations_num++;
-
         }
 
         int bus_num, my_bus_num = 0;
@@ -389,25 +335,17 @@ int main(void){
 
         for(int i = 0; i < bus_num; i++){
 
-            int id, owner_player_id, x, y, station_id, num_cars;
-
-            scanf("%d", &id);
-            scanf("%d", &owner_player_id);
-            scanf("%d", &x);
-            scanf("%d", &y);
-            scanf("%d", &station_id);
-            scanf("%d", &num_cars);
-
-            if(owner_player_id == my_player_id){
-                populate_bus(id, owner_player_id, x, y, station_id, num_cars, 1, &my_bus_array[my_bus_num]);
-                my_bus_num++;
-            }
+            scanf("%d%d%d%d%d%d",
+                    &my_bus_array[my_bus_num].id,
+                    &my_bus_array[my_bus_num].owner_player_id,
+                    &my_bus_array[my_bus_num].x,
+                    &my_bus_array[my_bus_num].y,
+                    &my_bus_array[my_bus_num].station_id,
+                    &my_bus_array[my_bus_num].num_cars);
         }
 
         int new_travelers_num, travelers_in_bus_num, travelers_at_dest_num;
-        scanf("%d", &new_travelers_num);
-        scanf("%d", &travelers_in_bus_num);
-        scanf("%d", &travelers_at_dest_num);
+        scanf("%d%d%d", &new_travelers_num, &travelers_in_bus_num, &travelers_at_dest_num);
 
         if(new_travelers_num > 0){
 
@@ -416,14 +354,10 @@ int main(void){
                 Traveler *new_traveler = malloc(sizeof(*new_traveler));
                 check_malloc(new_traveler);
 
-                int IDT, IDS1, IDS2;
+                scanf("%d%d%d", &new_traveler->id, &new_traveler->ids1, &new_traveler->ids2);
+                new_traveler->id_bus = -1;
 
-                scanf("%d", &IDT);
-                scanf("%d", &IDS1);
-                scanf("%d", &IDS2);
-                
-                populate_traveler(new_traveler, IDT, IDS1, IDS2, -1);
-                stations_array[IDS1].travelers_nb++; //Update station1 travelers number
+                stations_array[new_traveler->ids1].travelers_nb++; //Update station1 travelers number
                 add_traveler(travelers_list, new_traveler);
                 travelers_list_size++;
             }
@@ -434,8 +368,7 @@ int main(void){
             for (int i = 0; i < travelers_in_bus_num; i++){
 
                 int IDT, IDB;
-                scanf("%d", &IDT);
-                scanf("%d", &IDB);
+                scanf("%d%d", &IDT, &IDB);
 
                 update_travelers_in_bus(travelers_list, stations_array, IDT, IDB);
                 //fprintf(stderr, "TRAVELER %d IS NOW IN THE BUS %d\n", IDT, IDB);
@@ -464,6 +397,7 @@ int main(void){
 
         char command_buffer[BUFFER_SIZE];
 
+        /*
         if(my_bus_num == 0){
             fprintf(stderr, "NO BUS, SO I ADD ONE\n");
             snprintf(command_buffer, BUFFER_SIZE, "BUS %d", (rand() % stations_num));
@@ -488,6 +422,9 @@ int main(void){
                 }
             }
         }
+         */
+
+        snprintf(command_buffer, BUFFER_SIZE,"PASS");
 
         printf("%s\n", command_buffer);
 
@@ -498,4 +435,3 @@ int main(void){
         fflush(stdout);
     }
 }
-
