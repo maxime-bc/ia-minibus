@@ -6,7 +6,13 @@
 #define MAX_BUS_NUMBER 4
 #define MAX_STATIONS_NUMBER 10
 #define START_STATIONS_NUMBER 3
+
 #define BUFFER_SIZE 256
+
+#define AVAILABLE 1
+#define MOVING -1
+#define UNLOADING -2
+#define LOADING -3
 
 typedef struct Station Station;
 struct Station{
@@ -44,7 +50,7 @@ struct Bus{
     int y;
     int station_id;
     int num_cars;
-    int availability;
+    int state;
 };
 
 typedef struct TravelersList TravelersList;
@@ -89,8 +95,7 @@ void print_bus(Bus bus){
     fprintf(stderr, "Y=%d, ", bus.y);
     fprintf(stderr, "IDST=%d, ", bus.station_id);
     fprintf(stderr, "NC=%d, ", bus.num_cars);
-    fprintf(stderr, "AV=%d\n", bus.availability);
-
+    fprintf(stderr, "AV=%d\n", bus.state);
 }
 
 void print_all_bus(Bus bus[], int bus_num){
@@ -176,6 +181,25 @@ void update_travelers_in_bus(TravelersList *travelers_list, Station stations_arr
     }
 }
 
+int get_most_crowded_station(Station stations_array[], int stations_num){
+
+    int max_travelers_nb = -1, index = -1;
+
+    for(int i = 0; i < stations_num; i++){
+
+        if (stations_array[i].travelers_nb > max_travelers_nb) {
+            max_travelers_nb = stations_array[i].travelers_nb;
+            index = i;
+        }
+    }
+
+    if(index == -1){
+        return index;
+    }else{
+        return stations_array[index].id;
+    }
+}
+
 // get bus with bus_array[bus_id] and station with stations_array[station_id]
 int bus_arrived(Bus bus, Station station){
 
@@ -224,6 +248,25 @@ int int_compare(const void *a, const void *b){
     const int *ia = (const int *)a;
     const int *ib = (const int *)b;
     return *ia  - *ib;
+}
+
+int askBusMoving(Bus tabB[], Station tabS[], int nbus, int totalS) {
+
+    int idDest;
+    for (int i = 0; i < nbus; i++) {
+
+        idDest = tabB[i].station_id;
+        for (int j = 0; j < totalS; j++) {
+
+            if (idDest == tabS[j].id && tabB[j].state != -2 && tabB[j].state != -3) {
+                if (tabB[i].x == tabS[j].x && tabB[i].y == tabS[j].y) {
+                    return 0;
+                } else {
+                    return 1;
+                }
+            }
+        }
+    }
 }
 
 int get_the_most_popular_station(TravelersList *travelers_list, const int size, int bus_id){
@@ -303,6 +346,8 @@ int main(void){
 
     while(1){
 
+        int my_bus_num = 0;
+
         for(int i = 0; i < players_num; i++){
 
             scanf("%d%d%d%d%d%d",
@@ -329,20 +374,27 @@ int main(void){
             stations_num++;
         }
 
-        int bus_num, my_bus_num = 0;
-        Bus my_bus_array[MAX_BUS_NUMBER];
+        int bus_num;
+        Bus bus_array[MAX_BUS_NUMBER];
         scanf("%d", &bus_num);
 
         for(int i = 0; i < bus_num; i++){
 
             scanf("%d%d%d%d%d%d",
-                    &my_bus_array[my_bus_num].id,
-                    &my_bus_array[my_bus_num].owner_player_id,
-                    &my_bus_array[my_bus_num].x,
-                    &my_bus_array[my_bus_num].y,
-                    &my_bus_array[my_bus_num].station_id,
-                    &my_bus_array[my_bus_num].num_cars);
+                    &bus_array[i].id,
+                    &bus_array[i].owner_player_id,
+                    &bus_array[i].x,
+                    &bus_array[i].y,
+                    &bus_array[i].station_id,
+                    &bus_array[i].num_cars);
+
+            if(bus_array[i].owner_player_id == my_player_id){
+                my_bus_num++;
+            }
+
         }
+
+        fprintf(stderr, "I OWN %d BUS\n", my_bus_num);
 
         int new_travelers_num, travelers_in_bus_num, travelers_at_dest_num;
         scanf("%d%d%d", &new_travelers_num, &travelers_in_bus_num, &travelers_at_dest_num);
@@ -371,8 +423,6 @@ int main(void){
                 scanf("%d%d", &IDT, &IDB);
 
                 update_travelers_in_bus(travelers_list, stations_array, IDT, IDB);
-                //fprintf(stderr, "TRAVELER %d IS NOW IN THE BUS %d\n", IDT, IDB);
-
             }
         }
 
@@ -382,56 +432,70 @@ int main(void){
                 int IDT;
                 scanf("%d", &IDT);
                 delete_travelers_at_dest(travelers_list, IDT);
-                fprintf(stderr, "TRAVELER %d DELETED FROM LIST\n", IDT);
             }
         }
 
-        print_all_bus(my_bus_array, my_bus_num);
+        print_all_bus(bus_array, bus_num);
         print_all_stations(stations_array, stations_num);
         print_travelers_list(travelers_list);
         fprintf(stderr, "LIST SIZE : %d\n", travelers_list_size);
 
-        //get_the_most_popular_station(travelers_list, travelers_list_size, 0);
-
         // ----- IA starts here -----
 
-        char command_buffer[BUFFER_SIZE];
+        //Upgrades
+        if (my_bus_num < 4 && players_array[my_player_id].money >= 100){
+            //TODO : change spawn
+            fprintf(stderr, "IN THE COND\n");
+            printf("BUS %d; ", stations_array[0].id);
 
-        /*
-        if(my_bus_num == 0){
-            fprintf(stderr, "NO BUS, SO I ADD ONE\n");
-            snprintf(command_buffer, BUFFER_SIZE, "BUS %d", (rand() % stations_num));
+        }else if (my_bus_num == 4 && players_array[my_player_id].SP_upgrades < 2 && players_array[my_player_id].money >= 200){
+            printf("UPDATESP; ");
 
-        }else{
+        }else if (my_bus_num == 4 && players_array[my_player_id].SP_upgrades == 2 && players_array[my_player_id].CT_upgrades < 5 && players_array[my_player_id].money >= 100){
+            printf("UPDATECT; ");
+        }
 
-            if(my_bus_num < MAX_BUS_NUMBER && players_array[my_player_id].money >= 100){
-                fprintf(stderr, "NEW BUS BUY\n");
-                snprintf(command_buffer, BUFFER_SIZE,"BUS %d", (rand() % stations_num));
-            }else{
+        for (int i = 0; i < bus_num; i++) {
 
-                for(int i = 0; i < my_bus_num; i++){
+            if (bus_array[i].owner_player_id == my_player_id) {
 
-                    if(my_bus_array[i].availability == 1){
-                        snprintf(command_buffer, BUFFER_SIZE, "DESTINATION %d %d", my_bus_array[i].id, (rand() % stations_num));
-                        my_bus_array[i].availability = 0;
-                        fprintf(stderr, "BUS %d GOES TO A NEW RANDOM ST AND IS NOW UNAVAILABLE : %d\n", my_bus_array[i].id, my_bus_array[i].availability);
-                    }else{
-                        fprintf(stderr, "BUS %d IS UNAVAILABLE (GOING TO ST %d)\n", my_bus_array[i].id ,my_bus_array[i].station_id);
-                        snprintf(command_buffer, BUFFER_SIZE,"PASS");
+                if (bus_array[i].state == MOVING && askBusMoving(bus_array, stations_array, bus_num, stations_num) == 0) {
+                    bus_array[i].state = UNLOADING;
+
+                } else if (bus_array[i].state == UNLOADING) {
+                    bus_array[i].state = LOADING;
+
+                } else if (bus_array[i].state == AVAILABLE) {
+                    int popular_station = get_the_most_popular_station(travelers_list, travelers_list_size, bus_array[i].id);
+                    fprintf(stderr, "MOST POPULAR STATION : %d\n", popular_station);
+                    fprintf(stderr, "MOST CROWDED STATION : %d\n",get_most_crowded_station(stations_array, stations_num));
+                    /*
+                    if (popular_station == -1) {
+                        fprintf(stderr, "Most Voyageurs \n");
+                        printf("DESTINATION %d %d\n", bus_array[i].id,
+                               get_most_crowded_station(stations_array, stations_num));
+                    } else {
+                        fprintf(stderr, "Where Voyageurs \n");
+                        printf("DESTINATION %d %d\n", bus_array[i].id, popular_station);
                     }
+                     */
+                    printf("DESTINATION %d %d; ", bus_array[i].id, (rand() % stations_num));
+                    bus_array[i].state = MOVING;
+                } else if (bus_array[i].state != MOVING && bus_array[i].state != UNLOADING &&
+                           bus_array[i].state != AVAILABLE) {
+                    bus_array[i].state = AVAILABLE;
                 }
             }
         }
-         */
 
-        snprintf(command_buffer, BUFFER_SIZE,"PASS");
-
-        printf("%s\n", command_buffer);
+        //snprintf(command_buffer, BUFFER_SIZE,"PASS");
+        printf("PASS\n");
 
         // ----- IA ends here -----
 
         round++;
 
         fflush(stdout);
+        fflush(stderr);
     }
 }
