@@ -1,6 +1,6 @@
 html,body {
     height:100%;
-    
+
     margin:0;
     padding:0;
 }
@@ -14,10 +14,10 @@ div{
 
 .battle{
     overflow:hidden;
-    
+
     width: 100%;
     height: 100%;
-    
+
     margin:0px;
     padding:0px;
 }
@@ -25,7 +25,7 @@ div{
 #display{
     position:absolute;
     left:0px;
-    
+
     width: 60%;
     height: 100%;
 
@@ -39,13 +39,13 @@ div{
     /* Fixed width to center the text */
     width: 100%;
     height:100px;
-   
-    /* Center the text in the rectangle */ 
+
+    /* Center the text in the rectangle */
     text-align:center;
     line-height:100px;
     vertical-align: middle;
     font-size:30pt;
-   
+
 }
 
 .animation{
@@ -53,11 +53,11 @@ div{
     top:100px;
     bottom:80px;
     overflow: auto; /* In case the SVG is too big */
-    
+
     width: 100%;
-    
+
     margin: auto;
-    
+
     border: groove 5px;
 }
 
@@ -67,7 +67,7 @@ div{
     position: absolute;
     top:0px;
     left:0px;
-    
+
     width: 100%;
     height: 100%;
 }
@@ -79,12 +79,12 @@ div{
     /* Center the SVG inside this div */
     display: flex;
     justify-content: center;
-    
+
     width: 100%;
     height:80px;
-    
+
     margin:auto;
-    
+
     background-color: gray;
 }
 
@@ -96,14 +96,14 @@ div{
 .informations{
     position:absolute;
     right:0px;
-    
+
     width:40%;
     height:100%;
-    
+
     margin:0px;
     padding-left: 5px;
     padding-right: 5px;
-    
+
     font-size: 10pt;
     color: white;
     background-color: black;
@@ -113,7 +113,7 @@ div{
     height:50px;
 
     margin-bottom:5px;
-    
+
     border-bottom: solid white 1px;
     font-size: 15pt;
 }
@@ -121,16 +121,16 @@ div{
 
 .name span{
     display : inline-block;
-    
+
     vertical-align: middle;
     line-height: normal;
 }
 
 .stdouts{
     height:30%;
-    
+
     margin-bottom:5px;
-    
+
     border-bottom: solid white 1px;
     word-break: break-word; /* In case of Multiline */
 }
@@ -139,60 +139,44 @@ div{
     height:45%;
 
     margin-bottom:5px;
-    
+
     border-bottom: solid white 1px;
     word-break: break-word; /* In case of Multiline */
 }
 
 .gameInformations{
     height:10%;
-    
+
     color: red;
     word-break: break-word; /* In case of Multiline */
 }
 
 .name{
     display: inline-block;
-    
+
     height:50px;
     width:25%;
-    
+
     padding-left:3px;
-    
+
     text-align:center;
     border-left: solid white 1px;
     border-right: solid white 1px;
     line-height: 50px;
 }
 
-.stdout, .gameInformation{
+.stdout, .stderr, .gameInformation{
     position:relative; /* Enable absolute position of the span inside this div */
 
     overflow: auto;
     display: inline-block;
-    
+
     height:80%;
     width:25%;
-    
+
     padding-left:3px;
     padding-right:3px;
-    
-    border-left: solid white 1px;
-    border-right: solid white 1px;
-}
 
-.stderr{
-    position:relative; /* Enable absolute position of the span inside this div */
-
-    overflow: auto;
-    display: inline-block;
-    
-    height:80%;
-    width:50%;
-    
-    padding-left:3px;
-    padding-right:3px;
-    
     border-left: solid white 1px;
     border-right: solid white 1px;
 }
@@ -200,8 +184,8 @@ div{
 .stdoutText, .stderrText, .gameInformationText {
     /* Without this option, when the span of a sibling div contains more
      * than one line, this span goes out of its parent div.*/
-    position:absolute; 
+    position:absolute;
     top:0;
-    
+
     font-size: 8pt;
 }

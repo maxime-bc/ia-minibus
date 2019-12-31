@@ -3,7 +3,7 @@
 #include <time.h>
 #include <string.h>
 
-#define MAX_BUS_NUMBER 4
+#define MAX_BUS_NUMBER 16
 #define MAX_STATIONS_NUMBER 10
 #define START_STATIONS_NUMBER 3
 
@@ -94,12 +94,12 @@ void print_bus(Bus bus){
     fprintf(stderr, "Y=%d, ", bus.y);
     fprintf(stderr, "IDST=%d, ", bus.station_id);
     fprintf(stderr, "NC=%d, ", bus.num_cars);
-    fprintf(stderr, "AV=%d\n", bus.state);
+    fprintf(stderr, "ST=%d\n", bus.state);
 }
 
 void print_all_bus(Bus bus[], int bus_num){
 
-    fprintf(stderr, "MY BUS : \n");
+    fprintf(stderr, "ALL BUS : \n");
     for(int i = 0; i < bus_num; i++){
         print_bus(bus[i]);
     }
@@ -184,7 +184,7 @@ void update_travelers_in_bus(TravelersList *travelers_list, Station stations_arr
 
 int get_most_crowded_station(Station stations_array[], int stations_num){
 
-    int max_travelers_nb = -1, index = -1;
+    int max_travelers_nb = 0, index = -1;
 
     for(int i = 0; i < stations_num; i++){
 
@@ -193,12 +193,7 @@ int get_most_crowded_station(Station stations_array[], int stations_num){
             index = i;
         }
     }
-
-    if(index == -1 || max_travelers_nb == 0){
-        return -1;
-    }else{
-        return stations_array[index].id;
-    }
+    return index;
 }
 
 /* comparison function for qsort */
@@ -211,13 +206,11 @@ int int_compare(const void *a, const void *b){
 
 int is_bus_moving(Bus bus_array[], Station stations_array[], int bus_num, int stations_num) {
 
-    int dest_station_id;
     for (int i = 0; i < bus_num; i++) {
 
-        dest_station_id = bus_array[i].station_id;
         for (int j = 0; j < stations_num; j++) {
 
-            if (dest_station_id == stations_array[j].id && bus_array[j].state != STOPPED) {
+            if (bus_array[i].station_id == stations_array[j].id && bus_array[j].state != STOPPED) {
                 return (bus_array[j].x == stations_array[j].x && bus_array[j].y == stations_array[j].y);
             }
         }
@@ -275,12 +268,19 @@ int get_the_most_popular_station(TravelersList *travelers_list, const int size, 
 
 int main(void){
 
-    int players_num, travelers_list_size = 0, stations_num = START_STATIONS_NUMBER, my_player_id, round = 0;
+    int players_num = 0, travelers_list_size = 0, stations_num = START_STATIONS_NUMBER, my_player_id = 0, round = 0;
+    Bus bus_array[MAX_BUS_NUMBER];
+
+    for(int i = 0; i < MAX_BUS_NUMBER; i++){
+        bus_array[i].state = AVAILABLE;
+    }
 
     srand(time(NULL));
 
     scanf("%d", &players_num);
     scanf("%d", &my_player_id);
+
+    fprintf(stderr, "I'M THE PLAYER %d\n", my_player_id);
 
     Player players_array[players_num];
     Station stations_array[MAX_STATIONS_NUMBER];
@@ -300,8 +300,6 @@ int main(void){
     }
 
     while(1){
-
-        int my_bus_num = 0;
 
         for(int i = 0; i < players_num; i++){
 
@@ -329,8 +327,7 @@ int main(void){
             stations_num++;
         }
 
-        int bus_num;
-        Bus bus_array[MAX_BUS_NUMBER];
+        int bus_num, my_bus_num = 0;;
         scanf("%d", &bus_num);
 
         for(int i = 0; i < bus_num; i++){
@@ -392,13 +389,14 @@ int main(void){
         print_travelers_list(travelers_list);
         fprintf(stderr, "LIST SIZE : %d\n", travelers_list_size);
 
+
         // ----- IA starts here -----
 
         //Upgrades
         if (my_bus_num < 4 && players_array[my_player_id].money >= 100){
 
             int most_crowded_station_for_spawn = get_most_crowded_station(stations_array, stations_num);
-            fprintf(stderr, "MOST CROWDED STATION 4 SPAWN : %d\n", most_crowded_station_for_spawn);
+            fprintf(stderr, "SPAWNING TO STATION %d\n", most_crowded_station_for_spawn);
 
             if(most_crowded_station_for_spawn != -1){
                 printf("BUS %d; ", most_crowded_station_for_spawn);
@@ -415,18 +413,25 @@ int main(void){
 
             if (bus_array[i].owner_player_id == my_player_id) {
 
-                if (bus_array[i].state == MOVING && is_bus_moving(bus_array, stations_array, bus_num, stations_num) == 0) {
+                if (bus_array[i].state == MOVING &&
+                    is_bus_moving(bus_array, stations_array, bus_num, stations_num) == 0) {
                     bus_array[i].state = STOPPED;
 
                 } else if (bus_array[i].state == AVAILABLE) {
 
-                    int most_popular_station = get_the_most_popular_station(travelers_list, travelers_list_size, bus_array[i].id);
+                    int most_popular_station = get_the_most_popular_station(travelers_list, travelers_list_size,
+                                                                            bus_array[i].id);
 
                     if (most_popular_station == -1) {
 
                         int most_crowded_station = get_most_crowded_station(stations_array, stations_num);
-                        fprintf(stderr, "MOST CROWDED STATION : %d\n", most_crowded_station);
-                        printf("DESTINATION %d %d; ", bus_array[i].id, most_crowded_station);
+
+                        if(most_crowded_station != -1){
+                            fprintf(stderr, "MOST CROWDED STATION : %d\n", most_crowded_station);
+                            printf("DESTINATION %d %d; ", bus_array[i].id, most_crowded_station);
+                        }else{
+                            fprintf(stderr, "ALL STATIONS ARE EMPTY\n");
+                        }
 
                     } else {
                         fprintf(stderr, "MOST POPULAR STATION : %d\n", most_popular_station);
