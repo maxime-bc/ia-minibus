@@ -9,10 +9,9 @@
 
 #define BUFFER_SIZE 256
 
-#define AVAILABLE 1
-#define MOVING -1
-#define UNLOADING -2
-#define LOADING -3
+#define MOVING 1
+#define STOPPED 2
+#define AVAILABLE 3
 
 typedef struct Station Station;
 struct Station{
@@ -195,8 +194,8 @@ int get_most_crowded_station(Station stations_array[], int stations_num){
         }
     }
 
-    if(index == -1){
-        return index;
+    if(index == -1 || max_travelers_nb == 0){
+        return -1;
     }else{
         return stations_array[index].id;
     }
@@ -210,20 +209,16 @@ int int_compare(const void *a, const void *b){
     return *ia  - *ib;
 }
 
-int askBusMoving(Bus tabB[], Station tabS[], int nbus, int totalS) {
+int is_bus_moving(Bus bus_array[], Station stations_array[], int bus_num, int stations_num) {
 
-    int idDest;
-    for (int i = 0; i < nbus; i++) {
+    int dest_station_id;
+    for (int i = 0; i < bus_num; i++) {
 
-        idDest = tabB[i].station_id;
-        for (int j = 0; j < totalS; j++) {
+        dest_station_id = bus_array[i].station_id;
+        for (int j = 0; j < stations_num; j++) {
 
-            if (idDest == tabS[j].id && tabB[j].state != -2 && tabB[j].state != -3) {
-                if (tabB[i].x == tabS[j].x && tabB[i].y == tabS[j].y) {
-                    return 0;
-                } else {
-                    return 1;
-                }
+            if (dest_station_id == stations_array[j].id && bus_array[j].state != STOPPED) {
+                return (bus_array[j].x == stations_array[j].x && bus_array[j].y == stations_array[j].y);
             }
         }
     }
@@ -401,7 +396,7 @@ int main(void){
 
         //Upgrades
         if (my_bus_num < 4 && players_array[my_player_id].money >= 100){
-            //TODO : change spawn
+
             int most_crowded_station_for_spawn = get_most_crowded_station(stations_array, stations_num);
             fprintf(stderr, "MOST CROWDED STATION 4 SPAWN : %d\n", most_crowded_station_for_spawn);
 
@@ -420,35 +415,32 @@ int main(void){
 
             if (bus_array[i].owner_player_id == my_player_id) {
 
-                if (bus_array[i].state == MOVING && askBusMoving(bus_array, stations_array, bus_num, stations_num) == 0) {
-                    bus_array[i].state = UNLOADING;
-
-                } else if (bus_array[i].state == UNLOADING) {
-                    bus_array[i].state = LOADING;
+                if (bus_array[i].state == MOVING && is_bus_moving(bus_array, stations_array, bus_num, stations_num) == 0) {
+                    bus_array[i].state = STOPPED;
 
                 } else if (bus_array[i].state == AVAILABLE) {
+
                     int most_popular_station = get_the_most_popular_station(travelers_list, travelers_list_size, bus_array[i].id);
-                    //fprintf(stderr, "MOST POPULAR STATION : %d\n", most_popular_station);
-                    //fprintf(stderr, "MOST CROWDED STATION : %d\n",get_most_crowded_station(stations_array, stations_num));
 
                     if (most_popular_station == -1) {
+
                         int most_crowded_station = get_most_crowded_station(stations_array, stations_num);
                         fprintf(stderr, "MOST CROWDED STATION : %d\n", most_crowded_station);
                         printf("DESTINATION %d %d; ", bus_array[i].id, most_crowded_station);
+
                     } else {
                         fprintf(stderr, "MOST POPULAR STATION : %d\n", most_popular_station);
                         printf("DESTINATION %d %d; ", bus_array[i].id, most_popular_station);
                     }
 
                     bus_array[i].state = MOVING;
-                } else if (bus_array[i].state != MOVING && bus_array[i].state != UNLOADING &&
-                           bus_array[i].state != AVAILABLE) {
+
+                } else if (bus_array[i].state != MOVING && bus_array[i].state != AVAILABLE) {
                     bus_array[i].state = AVAILABLE;
                 }
             }
         }
 
-        //snprintf(command_buffer, BUFFER_SIZE,"PASS");
         printf("PASS\n");
 
         // ----- IA ends here -----
