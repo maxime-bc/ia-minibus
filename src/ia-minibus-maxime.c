@@ -2,6 +2,21 @@
 #include <stdlib.h>
 #include <string.h>
 
+/** ----- Strategy -----
+ *
+ * When a bus can be placed (enough money and not at the maximum buses number), it is placed on the station with the most travelers.
+ * If all the stations are empty, the round is passed.
+ *
+ * The ia upgrades first buses number, then buses speed and finally travel fares.
+ *
+ * Three states : moving, stopped and available
+ *
+ * Loop through all our buses :
+ *      if the bus is available, the bus dest is set to the station where most of the travelers wants to go.
+ *      if their is no travelers inside the bus, the dest of the bus is set to station with most travelers.
+ *      if all stations are empty, the tour is passed.
+ */
+
 /** ----- Preprocessor constants ----- **/
 
 #define MAX_BUS_NUMBER 16
@@ -169,21 +184,21 @@ int get_most_crowded_station(Station stations_array[], int stations_num) {
  *
  * TODO
  *
- * @param bus_array
+ * @param buses_array
  * @param stations_array
- * @param bus_num
+ * @param buses_num
  * @param stations_num
  * @return
  */
 
-int is_bus_moving(Bus bus_array[], Station stations_array[], int bus_num, int stations_num) {
+int is_bus_moving(Bus buses_array[], Station stations_array[], int buses_num, int stations_num) {
 
-    for (int i = 0; i < bus_num; i++) {
+    for (int i = 0; i < buses_num; i++) {
 
         for (int j = 0; j < stations_num; j++) {
 
-            if (bus_array[i].station_id == stations_array[j].id && bus_array[j].state != STOPPED) {
-                return (bus_array[j].x == stations_array[j].x && bus_array[j].y == stations_array[j].y);
+            if (buses_array[i].station_id == stations_array[j].id && buses_array[j].state != STOPPED) {
+                return (buses_array[j].x == stations_array[j].x && buses_array[j].y == stations_array[j].y);
             }
         }
     }
@@ -286,12 +301,12 @@ void check_malloc(void *pointer) {
 int main(void) {
 
     // Initialised variables.
-    int players_num = 0, travelers_list_size = 0, stations_num = START_STATIONS_NUMBER, my_player_id = 0, round = 0, my_bus_num = 0;
+    int players_num = 0, travelers_list_size = 0, stations_num = START_STATIONS_NUMBER, my_player_id = 0, round = 0, my_buses_num = 0;
 
     // Variables initialised each round with game data using scanf.
-    int bus_num, new_station, new_travelers_num, travelers_in_bus_num, travelers_at_dest_num, IDT, IDB;
+    int buses_num, new_station, new_travelers_num, travelers_in_buses_num, travelers_at_dest_num, id_traveler, id_bus;
 
-    Bus bus_array[MAX_BUS_NUMBER];
+    Bus buses_array[MAX_BUS_NUMBER];
     Station stations_array[MAX_STATIONS_NUMBER];
     TravelersList *travelers_list = malloc(sizeof(*travelers_list));
     check_malloc(travelers_list);
@@ -299,9 +314,9 @@ int main(void) {
     // Initialise the travelers list.
     travelers_list->first_traveler = NULL;
 
-    // Initialise the state of all the bus.
+    // Initialise the state of all the buses.
     for (int i = 0; i < MAX_BUS_NUMBER; i++) {
-        bus_array[i].state = AVAILABLE;
+        buses_array[i].state = AVAILABLE;
     }
 
     // Get the number of players and our player id.
@@ -347,27 +362,27 @@ int main(void) {
             stations_num++;
         }
 
-        // my_bus_num is calculated at each round, so it is initialised to 0.
-        my_bus_num = 0;
+        // my_buses_num is calculated at each round, so it is initialised to 0.
+        my_buses_num = 0;
 
-        scanf("%d", &bus_num);
+        scanf("%d", &buses_num);
 
-        for (int i = 0; i < bus_num; i++) {
+        for (int i = 0; i < buses_num; i++) {
 
             scanf("%d%d%d%d%d%d",
-                  &bus_array[i].id,
-                  &bus_array[i].owner_player_id,
-                  &bus_array[i].x,
-                  &bus_array[i].y,
-                  &bus_array[i].station_id,
-                  &bus_array[i].num_cars);
+                  &buses_array[i].id,
+                  &buses_array[i].owner_player_id,
+                  &buses_array[i].x,
+                  &buses_array[i].y,
+                  &buses_array[i].station_id,
+                  &buses_array[i].num_cars);
 
-            if (bus_array[i].owner_player_id == my_player_id) {
-                my_bus_num++;
+            if (buses_array[i].owner_player_id == my_player_id) {
+                my_buses_num++;
             }
         }
 
-        scanf("%d%d%d", &new_travelers_num, &travelers_in_bus_num, &travelers_at_dest_num);
+        scanf("%d%d%d", &new_travelers_num, &travelers_in_buses_num, &travelers_at_dest_num);
 
         if (new_travelers_num > 0) {
 
@@ -385,28 +400,28 @@ int main(void) {
             }
         }
 
-        if (travelers_in_bus_num > 0) {
+        if (travelers_in_buses_num > 0) {
 
-            for (int i = 0; i < travelers_in_bus_num; i++) {
+            for (int i = 0; i < travelers_in_buses_num; i++) {
 
-                scanf("%d%d", &IDT, &IDB);
+                scanf("%d%d", &id_traveler, &id_bus);
 
-                update_traveler_in_bus(travelers_list, stations_array, IDT, IDB);
+                update_traveler_in_bus(travelers_list, stations_array, id_traveler, id_bus);
             }
         }
 
         if (travelers_at_dest_num > 0) {
 
             for (int i = 0; i < travelers_at_dest_num; i++) {
-                scanf("%d", &IDT);
-                delete_traveler_at_dest(travelers_list, &travelers_list_size, IDT);
+                scanf("%d", &id_traveler);
+                delete_traveler_at_dest(travelers_list, &travelers_list_size, id_traveler);
             }
         }
 
         /** IA starts here **/
 
         // Checking for upgrades
-        if (my_bus_num < 4 && players_array[my_player_id].money >= 100) {
+        if (my_buses_num < 4 && players_array[my_player_id].money >= 100) {
 
             int most_crowded_station_for_spawn = get_most_crowded_station(stations_array, stations_num);
 
@@ -414,42 +429,41 @@ int main(void) {
                 printf("BUS %d; ", most_crowded_station_for_spawn);
             }
 
-        } else if (my_bus_num == 4 && players_array[my_player_id].SP_upgrades < 2 &&
+        } else if (my_buses_num == 4 && players_array[my_player_id].SP_upgrades < 2 &&
                    players_array[my_player_id].money >= 200) {
             printf("UPDATESP; ");
 
-        } else if (my_bus_num == 4 && players_array[my_player_id].SP_upgrades == 2 &&
+        } else if (my_buses_num == 4 && players_array[my_player_id].SP_upgrades == 2 &&
                    players_array[my_player_id].CT_upgrades < 5 && players_array[my_player_id].money >= 100) {
             printf("UPDATECT; ");
         }
 
-        //Looping through my bus
-        for (int i = 0; i < bus_num; i++) {
+        //Looping through my buses
+        for (int i = 0; i < buses_num; i++) {
 
-            if (bus_array[i].owner_player_id == my_player_id) {
+            if (buses_array[i].owner_player_id == my_player_id) {
 
-                if (bus_array[i].state == MOVING &&
-                    is_bus_moving(bus_array, stations_array, bus_num, stations_num) == 0) {
-                    bus_array[i].state = STOPPED;
+                if (buses_array[i].state == MOVING &&
+                    is_bus_moving(buses_array, stations_array, buses_num, stations_num) == 0) {
+                    buses_array[i].state = STOPPED;
 
-                } else if (bus_array[i].state == AVAILABLE) {
+                } else if (buses_array[i].state == AVAILABLE) {
 
                     int most_popular_station = get_the_most_popular_station(travelers_list, travelers_list_size,
-                                                                            bus_array[i].id);
+                                                                            buses_array[i].id);
                     if (most_popular_station != -1) {
-                        printf("DESTINATION %d %d; ", bus_array[i].id, most_popular_station);
+                        printf("DESTINATION %d %d; ", buses_array[i].id, most_popular_station);
 
                     } else {
                         int most_crowded_station = get_most_crowded_station(stations_array, stations_num);
                         if (most_crowded_station != -1) {
-                            printf("DESTINATION %d %d; ", bus_array[i].id, most_crowded_station);
+                            printf("DESTINATION %d %d; ", buses_array[i].id, most_crowded_station);
                         }
                     }
+                    buses_array[i].state = MOVING;
 
-                    bus_array[i].state = MOVING;
-
-                } else if (bus_array[i].state != MOVING && bus_array[i].state != AVAILABLE) {
-                    bus_array[i].state = AVAILABLE;
+                } else if (buses_array[i].state != MOVING && buses_array[i].state != AVAILABLE) {
+                    buses_array[i].state = AVAILABLE;
                 }
             }
         }
