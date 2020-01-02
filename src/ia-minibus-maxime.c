@@ -135,7 +135,7 @@ void delete_traveler_at_dest(TravelersList *travelers_list, int *travelers_list_
  * Updates the id_bus of a traveler with the id of the bus he got on.
  *
  * @param travelers_list : the list of travelers from which the traveler should be updated.
- * @param stations_array : array of stations
+ * @param stations_array : array of stations.
  * @param id_traveler : id of the traveler for which the id_bus needs to be updated.
  * @param id_bus : id of the bus in which the traveler got on.
  */
@@ -160,8 +160,8 @@ void update_traveler_in_bus(TravelersList *travelers_list, Station stations_arra
  *
  * Search the most crowded station.
  *
- * @param stations_array : array of stations
- * @param stations_num : number of stations in the stations_array
+ * @param stations_array : array of stations.
+ * @param stations_num : number of stations in the stations_array.
  * @return id of the most crowded station.
  */
 
@@ -182,32 +182,32 @@ int get_most_crowded_station(Station stations_array[], int stations_num) {
 /**
  * is_bus_moving()
  *
- * TODO
+ * Permits to know if a given bus is in movement or stopped at a station.
  *
- * @param buses_array
- * @param stations_array
- * @param buses_num
- * @param stations_num
- * @return
+ * @param bus : bus for which we want to know if it is moving.
+ * @param stations_array : array of stations.
+ * @param stations_num : number of stations in the stations_array.
+ * @return Returns 1 if the bus is moving, 0 if the bus is stopped at a station
+ * and -1 if the bus destination does not exist in the given stations array.
+ *
  */
 
-int is_bus_moving(Bus buses_array[], Station stations_array[], int buses_num, int stations_num) {
+int is_bus_moving(Bus bus, Station stations_array[], int stations_num){
 
-    for (int i = 0; i < buses_num; i++) {
+    for (int i = 0; i < stations_num; i++){
 
-        for (int j = 0; j < stations_num; j++) {
-
-            if (buses_array[i].station_id == stations_array[j].id && buses_array[j].state != STOPPED) {
-                return (buses_array[j].x == stations_array[j].x && buses_array[j].y == stations_array[j].y);
-            }
+        if(bus.station_id == stations_array[i].id){
+            // If the coordinates of the bus matches those of a station, it means that the bus is stopped.
+            return !(bus.x == stations_array[i].x && bus.y == stations_array[i].y);
         }
     }
+    return -1;
 }
 
 /**
  * int_compare()
  *
- * Calculates the difference bewteen two integer.
+ * Calculates the difference between two integers.
  * This function is used by the function qsort called in get_the_most_popular_station().
  *
  * @param a : int a to compare with b.
@@ -403,9 +403,7 @@ int main(void) {
         if (travelers_in_buses_num > 0) {
 
             for (int i = 0; i < travelers_in_buses_num; i++) {
-
                 scanf("%d%d", &id_traveler, &id_bus);
-
                 update_traveler_in_bus(travelers_list, stations_array, id_traveler, id_bus);
             }
         }
@@ -444,7 +442,7 @@ int main(void) {
             if (buses_array[i].owner_player_id == my_player_id) {
 
                 if (buses_array[i].state == MOVING &&
-                    is_bus_moving(buses_array, stations_array, buses_num, stations_num) == 0) {
+                    is_bus_moving(buses_array[i], stations_array, stations_num) == 0) {
                     buses_array[i].state = STOPPED;
 
                 } else if (buses_array[i].state == AVAILABLE) {
