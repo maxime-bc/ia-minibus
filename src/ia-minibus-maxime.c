@@ -5,22 +5,25 @@
 /** ----- Strategy -----
  *
  * All travelers are stored in a list.
- * When a traveler reach his destination, he is deleted from the travelers list.
+ * When a traveler reach his destination, he is deleted from the list.
  *
- * When a bus can be placed (enough money and not at the maximum buses number),
- * it is placed on the station with the most travelers. If all the stations are empty, the round is passed.
+ * First, the program upgrades buses number, then buses speed (SP) and finally travel fares (CT).
  *
- * The ia upgrades first buses number, then buses speed and finally travel fares.
+ * If a new bus can be placed (enough money and the maximum number of buses is not reached),
+ * it is placed on the station with the most travelers.
+ * If all the stations are empty, the round is passed and the bus is not placed.
  *
- * Three bus states :
+ * A bus can have 3 states :
  *                  - moving (going from a station A to a station B),
- *                  - stopped (travelers who arrived at destination got off and new travelers got on),
+ *                  - stopped (the bus is at a station, waiting for travelers who arrived at
+ *                            their destination to got off and for new travelers to got on),
  *                  - available (bus is ready to go to a new destination station).
  *
  * For each bus I own :
- *      - if the bus is available, the bus dest is set to the station where most of the travelers wants to go.
- *      - if there is no travelers inside the bus, the destination of the bus is set to station with most travelers.
- *      - if all stations are empty, the tour is passed.
+ *      - if the bus is available with travelers on board, its destination is set to the station where
+ *      most of the travelers wants to go,
+ *      - if the bus is available with no travelers on board, its destination is set to
+ *      the station with most travelers waiting for a bus. If all the stations are empty, the round is passed.
  */
 
 /** ----- Preprocessor constants ----- **/
@@ -41,7 +44,7 @@ struct Station {
     int x;
     int y;
     int capacity;
-    int travelers_nb;
+    int travelers_number;
 };
 
 typedef struct Player Player;
@@ -59,7 +62,7 @@ struct Traveler {
     int id;
     int ids1;
     int ids2;
-    int id_bus;
+    int bus_id;
     Traveler *next;
 };
 
@@ -87,7 +90,7 @@ struct TravelersList {
  * Adds a traveler to the travelers list.
  *
  * @param travelers_list : list of travelers where the traveler should be added.
- * @param new_traveler : traveler to add to the travelers list.
+ * @param new_traveler : traveler to add to @param travelers_list.
  */
 
 void add_traveler(TravelersList *travelers_list, Traveler *new_traveler) {
@@ -138,23 +141,23 @@ void delete_traveler_at_dest(TravelersList *travelers_list, int *travelers_list_
 /**
  * update_traveler_in_bus()
  *
- * Updates the id_bus of a traveler with the id of the bus he got on.
+ * Updates the bus_id of a traveler with the id of the bus he got on.
  *
  * @param travelers_list : list of travelers containing the traveler to update.
  * @param stations_array : array of stations.
- * @param id_traveler : id of the traveler for which @param id_bus needs to be updated.
- * @param id_bus : id of the bus in which the traveler got on.
+ * @param traveler_id : id of the traveler for which the bus_id needs to be updated.
+ * @param bus_id : id of the bus in which the traveler got on.
  */
 
-void update_traveler_in_bus(TravelersList *travelers_list, Station stations_array[], int id_traveler, int id_bus) {
+void update_traveler_in_bus(TravelersList *travelers_list, Station stations_array[], int traveler_id, int bus_id) {
 
     Traveler *actual_traveler = travelers_list->first_traveler;
 
     while (actual_traveler != NULL) {
 
-        if (actual_traveler->id == id_traveler) {
-            actual_traveler->id_bus = id_bus;
-            stations_array[actual_traveler->ids1].travelers_nb--;
+        if (actual_traveler->id == traveler_id) {
+            actual_traveler->bus_id = bus_id;
+            stations_array[actual_traveler->ids1].travelers_number--;
         }
 
         actual_traveler = actual_traveler->next;
@@ -190,7 +193,7 @@ int is_bus_moving(Bus bus, Station stations_array[], int stations_number) {
  * int_compare()
  *
  * Calculates the difference between two integers.
- * This function is used by the function qsort called in get_the_most_popular_station().
+ * This function is used by the function qsort called in @see get_the_most_popular_station().
  *
  * @param a : int a to compare with b.
  * @param b : int b to compare with a.
@@ -210,11 +213,11 @@ int int_compare(const void *a, const void *b) {
  *
  * @param travelers_list : list of travelers used to get all the travelers in the bus corresponding to @param bus_id.
  * @param travelers_list_size : size of @param travelers_list.
- * @param bus_id : id of the bus for which we want to know the most popular destination.
+ * @param bus_id : id of the bus for which we want to know travelers most popular destination.
  * @return -1 if the bus is empty or the id of the most popular station if the bus isn't empty.
  */
 
-int get_the_most_popular_station(TravelersList *travelers_list, const int travelers_list_size, int bus_id) {
+int get_the_most_popular_station(TravelersList *travelers_list, int travelers_list_size, int bus_id) {
 
     int counter, max_freq = 0, index = -1, travelers_in_bus_dest_array[travelers_list_size], frequency[travelers_list_size];
     Traveler *actual_traveler = travelers_list->first_traveler;
@@ -223,7 +226,7 @@ int get_the_most_popular_station(TravelersList *travelers_list, const int travel
 
     while (actual_traveler != NULL) {
 
-        if (actual_traveler->id_bus == bus_id) {
+        if (actual_traveler->bus_id == bus_id) {
             travelers_in_bus_dest_array[travelers_in_bus_number] = actual_traveler->ids2;
             frequency[travelers_in_bus_number] = -1;
             travelers_in_bus_number++;
@@ -236,19 +239,19 @@ int get_the_most_popular_station(TravelersList *travelers_list, const int travel
         return -1;
     }
 
-    qsort(travelers_in_bus_dest_array, travelers_in_bus_number, sizeof(int), int_compare);
+    qsort(travelers_in_bus_dest_array, (size_t) travelers_in_bus_number, sizeof(int), int_compare);
 
     for (int i = 0; i < travelers_in_bus_number; i++) {
 
         counter = 1;
         for (int j = i + 1; j < travelers_in_bus_number; j++) {
-            // If duplicate element is found
+            // If a duplicate element is found
             if (travelers_in_bus_dest_array[i] == travelers_in_bus_dest_array[j]) {
                 counter++;
-                frequency[j] = 0; // Make sure not to count frequency of same element again
+                frequency[j] = 0; // Make sure to not count frequency of the same element again
             }
         }
-        // If frequency of current element is not counted
+        // If frequency of the current element is not counted
         if (frequency[i] != 0) {
             frequency[i] = counter;
         }
@@ -280,8 +283,8 @@ int get_most_crowded_station(Station stations_array[], int stations_number) {
 
     for (int i = 0; i < stations_number; i++) {
 
-        if (stations_array[i].travelers_nb > max_travelers_nb) {
-            max_travelers_nb = stations_array[i].travelers_nb;
+        if (stations_array[i].travelers_number > max_travelers_nb) {
+            max_travelers_nb = stations_array[i].travelers_number;
             index = i;
         }
     }
@@ -291,15 +294,15 @@ int get_most_crowded_station(Station stations_array[], int stations_number) {
 /**
  * check_malloc()
  *
- * Check if memory allocation with malloc has worked.
+ * Check if memory allocation with malloc worked.
  *
- * @param pointer : pointer returned by malloc, NULL if the memory allocation failed or
- * the address of the first byte of the allocated memory area.
+ * @param pointer : pointer to check, returned by malloc.
  */
 
 void check_malloc(void *pointer) {
+    // Pointer is NULL if the memory allocation with malloc failed.
     if (pointer == NULL) {
-        fprintf(stderr, "Cannot allocate initial memory for data\n");
+        fprintf(stderr, "Cannot allocate initial memory for data.\n");
         exit(EXIT_FAILURE);
     }
 }
@@ -340,7 +343,7 @@ int main(void) {
               &stations_array[i].x,
               &stations_array[i].y,
               &stations_array[i].capacity);
-        stations_array[i].travelers_nb = 0;
+        stations_array[i].travelers_number = 0;
     }
 
     while (1) {
@@ -365,7 +368,7 @@ int main(void) {
                   &stations_array[stations_number].x,
                   &stations_array[stations_number].y,
                   &stations_array[stations_number].capacity);
-            stations_array[stations_number].travelers_nb = 0;
+            stations_array[stations_number].travelers_number = 0;
 
             stations_number++;
         }
@@ -400,9 +403,9 @@ int main(void) {
                 check_malloc(new_traveler);
 
                 scanf("%d%d%d", &new_traveler->id, &new_traveler->ids1, &new_traveler->ids2);
-                new_traveler->id_bus = -1;
+                new_traveler->bus_id = -1;
 
-                stations_array[new_traveler->ids1].travelers_nb++; //Update station1 travelers number
+                stations_array[new_traveler->ids1].travelers_number++; //Update station1 travelers number
                 add_traveler(travelers_list, new_traveler);
                 travelers_list_size++;
             }
@@ -448,7 +451,7 @@ int main(void) {
         // Looping through all buses
         for (int i = 0; i < buses_number; i++) {
 
-            // Filter buses by the owner player id to give commands to my own buses.
+            // Filter buses by owner player id to give commands only to my own buses.
             if (buses_array[i].owner_player_id == my_player_id) {
 
                 if (buses_array[i].state == MOVING &&
